@@ -108,3 +108,81 @@ function supprimerJoueur($id): bool {
     $stmt = $pdo->prepare("DELETE FROM joueurs WHERE id = :id");
     return $stmt->execute(['id' => $id]);
 }
+
+/**
+ * Ajouter un match dans la base de données
+ *
+ * @param string $date_match
+ * @param string $heure_match
+ * @param string $equipe_adverse
+ * @param string $lieu
+ * @param string|null $resultat
+ * @return bool
+ */
+function ajouterMatch(string $date_match, string $heure_match, string $equipe_adverse, string $lieu, string $resultat = null): bool {
+    $pdo = getDbConnection();
+    $stmt = $pdo->prepare("
+        INSERT INTO matchs (date_match, heure_match, equipe_adverse, lieu, resultat)
+        VALUES (:date_match, :heure_match, :equipe_adverse, :lieu, :resultat)
+    ");
+    return $stmt->execute([
+        ':date_match' => $date_match,
+        ':heure_match' => $heure_match,
+        ':equipe_adverse' => $equipe_adverse,
+        ':lieu' => $lieu,
+        ':resultat' => $resultat
+    ]);
+}
+
+/**
+ * Récupérer tous les matchs
+ *
+ * @return array
+ */
+function getAllMatchs() {
+    $pdo = getDbConnection(); // Appel à la fonction de connexion
+    $stmt = $pdo->query("SELECT id, date_match, heure_match, equipe_adverse, lieu, resultat FROM matchs ORDER BY date_match DESC, heure_match DESC");
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/**
+ * Supprime un match de la base de données.
+ * 
+ * @param int $id
+ * @return bool
+ */
+function supprimerMatch($id): bool {
+    $pdo = getDbConnection();
+    $stmt = $pdo->prepare("DELETE FROM matchs WHERE id = :id");
+    return $stmt->execute(['id' => $id]);
+}
+
+function getMatchParId($id) {
+    $pdo = getDbConnection();
+    $stmt = $pdo->prepare("SELECT * FROM matchs WHERE id = :id");
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function modifierMatch($id, $date_match, $heure_match, $equipe_adverse, $lieu, $resultat) {
+    $pdo = getDbConnection();
+    $stmt = $pdo->prepare("
+        UPDATE matchs
+        SET date_match = :date_match,
+            heure_match = :heure_match,
+            equipe_adverse = :equipe_adverse,
+            lieu = :lieu,
+            resultat = :resultat
+        WHERE id = :id
+    ");
+    return $stmt->execute([
+        'date_match' => $date_match,
+        'heure_match' => $heure_match,
+        'equipe_adverse' => $equipe_adverse,
+        'lieu' => $lieu,
+        'resultat' => $resultat,
+        'id' => $id
+    ]);
+}
+
+?>

@@ -1,0 +1,13 @@
+<?php
+// header.php
+?>
+
+<header>
+    <nav>
+        <ul>
+            <li><a href="ListeJoueur.php"><button class="nav-button">Liste des joueurs</button></a></li>
+            <li><a href="ListeMatch.php"><button class="nav-button">Liste des matchs</button></a></li>
+            <!-- Ajouter d'autres liens si nécessaire -->
+        </ul>
+    </nav>
+</header>

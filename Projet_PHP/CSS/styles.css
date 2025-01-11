@@ -68,3 +68,42 @@ table tr:nth-child(even) {
 table tr:hover {
     background-color: #f1f1f1;
 }
+
+/* styles.css */
+
+/* Styles pour le menu de navigation */
+header {
+    background-color: #333;
+    padding: 10px;
+    text-align: center;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 20px;
+}
+
+nav ul li a {
+    text-decoration: none;
+}
+
+/* Style spécifique aux boutons du menu */
+.nav-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.nav-button:hover {
+    background-color: #45a049;
+}
