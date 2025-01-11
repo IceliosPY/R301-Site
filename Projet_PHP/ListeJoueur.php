@@ -42,6 +42,11 @@ if (isset($_GET['supprimer'])) {
 <body>
     <h1>Liste des joueurs</h1>
 
+    <!-- Bouton pour ajouter un joueur -->
+    <div>
+        <a href="CreationJoueur.php" class="btn btn-primary" style="display: inline-block; padding: 10px 20px; color: white; background-color: blue; text-decoration: none; border-radius: 5px;">Ajouter un joueur</a>
+    </div>
+
     <?php if (empty($joueurs)): ?>
         <p>Aucun joueur trouvé dans la base de données.</p>
     <?php else: ?>

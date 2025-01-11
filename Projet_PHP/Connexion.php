@@ -1,25 +1,24 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 session_start();
 require_once 'librairie/BD.php'; // Inclure votre fichier BD pour la connexion
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
 
     // Connexion à la base de données
     $pdo = getDbConnection();
 
     // Vérifier si l'utilisateur existe
     $stmt = $pdo->prepare("SELECT * FROM utilisateurs WHERE username = :username AND password = :password");
-    $stmt->execute(['username' => $username, 'password' => $password]);
+    $stmt->execute([
+        'username' => $username,
+        'password' => $password, // Pas de hachage, utilisation directe
+    ]);
     $user = $stmt->fetch();
 
     if ($user) {
-        // ;Connexion réussie : enregistrer l'utilisateur dans la session
+        // Connexion réussie : enregistrer l'utilisateur dans la session
         $_SESSION['user_id'] = $user['id']; // Stocke l'ID utilisateur dans la session
         $_SESSION['user'] = $user['username'];
 
@@ -42,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <h1>Connexion</h1>
     <?php if (isset($erreur)): ?>
-        <p style="color:red;"><?= $erreur ?></p>
+        <p style="color:red;"><?= htmlspecialchars($erreur) ?></p>
     <?php endif; ?>
     <form method="POST" action="">
         <label for="username">Nom d'utilisateur :</label>
