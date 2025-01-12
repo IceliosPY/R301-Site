@@ -29,6 +29,7 @@ if (isset($_GET['supprimer'])) {
         $message = "Erreur lors de la suppression du joueur.";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -75,6 +76,7 @@ if (isset($_GET['supprimer'])) {
                         <td><?= htmlspecialchars($match['resultat']) ?></td>
                         <td>
                             <a href="ModifierMatch.php?id=<?= urlencode($match['id']) ?>">Modifier</a>
+                            <a href="ModifierFeuilleMatch.php?match_id=<?= urlencode($match['id']) ?>">Voir/Modifier la sélection</a>
                             <a href="?supprimer=<?= $match['id'] ?>" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce match ?')">Supprimer</a>
                         </td>
                     </tr>

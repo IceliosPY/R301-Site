@@ -16,3 +16,12 @@ CREATE TABLE utilisateurs (
 );
 
 INSERT INTO utilisateurs (username, password) VALUES ('Joueur@gmail.com', 'Password');
+
+CREATE TABLE feuillematch (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_match INT,
+    id_joueur INT,
+    statut ENUM('titulaire', 'remplaçant') NOT NULL,
+    FOREIGN KEY (id_match) REFERENCES matchs(id),
+    FOREIGN KEY (id_joueur) REFERENCES joueurs(id)
+);

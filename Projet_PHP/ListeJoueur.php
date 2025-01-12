@@ -59,7 +59,6 @@ if (isset($_GET['supprimer'])) {
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nom</th>
                     <th>Prénom</th>
                     <th>N° Licence</th>
@@ -72,7 +71,6 @@ if (isset($_GET['supprimer'])) {
             <tbody>
                 <?php foreach ($joueurs as $joueur): ?>
                     <tr>
-                        <td><?= htmlspecialchars($joueur['id']) ?></td>
                         <td><?= htmlspecialchars($joueur['nom']) ?></td>
                         <td><?= htmlspecialchars($joueur['prenom']) ?></td>
                         <td><?= htmlspecialchars($joueur['numero_licence']) ?></td>

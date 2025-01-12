@@ -14,23 +14,33 @@ $message = '';
 
 // Traitement du formulaire d'ajout d'un match
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $date_match = $_POST['date_match'];
-    $heure_match = $_POST['heure_match'];
+    $date_match = $_POST['date_match']; // format 'YYYY-MM-DD'
+    $heure_match = $_POST['heure_match']; // format 'HH:MM'
     $equipe_adverse = $_POST['equipe_adverse'];
     $lieu = $_POST['lieu'];
-    $resultat = $_POST['resultat'] ?? null; // Si le résultat n'est pas saisi, il restera NULL
+    $resultat = $_POST['resultat'];
 
-    // Vérifier que tous les champs sont remplis (sauf le résultat qui est optionnel)
-    if (empty($date_match) || empty($heure_match) || empty($equipe_adverse) || empty($lieu)) {
-        $message = "Tous les champs sont obligatoires, sauf le résultat.";
+    // Combiner date et heure pour la comparaison
+    $datetime_saisie = new DateTime($date_match . ' ' . $heure_match);
+    $datetime_actuelle = new DateTime(); // Date et heure actuelles
+
+    // Vérifier si la date et l'heure sont dans le futur ou égales à l'heure actuelle
+    if ($datetime_saisie < $datetime_actuelle) {
+        $message = "La date et l'heure du match doivent être au moins égales à la date et l'heure actuelles.";
     } else {
-        // Appeler la fonction ajouterMatch() de BD.php
-        if (ajouterMatch($date_match, $heure_match, $equipe_adverse, $lieu, $resultat)) {
-            $message = "Match ajouté avec succès.";
-            header("Location: ListeMatch.php"); // Redirection vers la liste des matchs
+        // Si la date et l'heure sont valides, on enregistre le match et on récupère son ID
+        $match_id = ajouterMatch($date_match, $heure_match, $equipe_adverse, $lieu, $resultat);
+
+        // Vérifier si l'insertion a réussi
+        if ($match_id) {
+            // Enregistrer l'ID du match dans la session pour l'utiliser dans ModifierFeuilleMatch.php
+            $_SESSION['match_id_temporaire'] = $match_id;
+
+            // Rediriger vers la page de création de la feuille de match
+            header("Location: ModifierFeuilleMatch.php?match_id=" . $match_id);
             exit();
         } else {
-            $message = "Erreur lors de l'ajout du match.";
+            $message = "Erreur lors de la création du match.";
         }
     }
 }

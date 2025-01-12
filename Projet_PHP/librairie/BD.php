@@ -119,20 +119,24 @@ function supprimerJoueur($id): bool {
  * @param string|null $resultat
  * @return bool
  */
-function ajouterMatch(string $date_match, string $heure_match, string $equipe_adverse, string $lieu, string $resultat = null): bool {
+function ajouterMatch(string $date_match, string $heure_match, string $equipe_adverse, string $lieu, string $resultat = null) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("
         INSERT INTO matchs (date_match, heure_match, equipe_adverse, lieu, resultat)
         VALUES (:date_match, :heure_match, :equipe_adverse, :lieu, :resultat)
     ");
-    return $stmt->execute([
+    $stmt->execute([
         ':date_match' => $date_match,
         ':heure_match' => $heure_match,
         ':equipe_adverse' => $equipe_adverse,
         ':lieu' => $lieu,
         ':resultat' => $resultat
     ]);
+    
+    // Récupérer l'ID du match ajouté
+    return $pdo->lastInsertId();  // Retourne l'ID du match
 }
+
 
 /**
  * Récupérer tous les matchs
@@ -153,9 +157,16 @@ function getAllMatchs() {
  */
 function supprimerMatch($id): bool {
     $pdo = getDbConnection();
+    
+    // Supprimer d'abord les joueurs associés au match
+    $stmt = $pdo->prepare("DELETE FROM feuillematch WHERE match_id = :id");
+    $stmt->execute(['id' => $id]);
+
+    // Supprimer ensuite le match
     $stmt = $pdo->prepare("DELETE FROM matchs WHERE id = :id");
     return $stmt->execute(['id' => $id]);
 }
+
 
 function getMatchParId($id) {
     $pdo = getDbConnection();
@@ -183,6 +194,39 @@ function modifierMatch($id, $date_match, $heure_match, $equipe_adverse, $lieu, $
         'resultat' => $resultat,
         'id' => $id
     ]);
+}
+
+function getJoueursActifs() {
+    $pdo = getDbConnection();
+    $stmt = $pdo->prepare("SELECT id, nom, prenom, taille, poids FROM joueurs WHERE statut = 'actif' ORDER BY nom, prenom");
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function ajouterJoueurFeuilleMatch($match_id, $joueur_id, $statut) {
+    $pdo = getDbConnection();
+    $stmt = $pdo->prepare("
+        INSERT INTO feuillematch (match_id, joueur_id, statut)
+        VALUES (:match_id, :joueur_id, :statut)
+    ");
+    $stmt->execute([
+        ':match_id' => $match_id,
+        ':joueur_id' => $joueur_id,
+        ':statut' => $statut
+    ]);
+}
+
+function getJoueursDeFeuilleMatchComplet($match_id) {
+    $pdo = getDbConnection();
+    $stmt = $pdo->prepare("SELECT joueur_id, statut FROM feuillematch WHERE match_id = :match_id");
+    $stmt->execute(['match_id' => $match_id]);
+    return $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+}
+
+function supprimerJoueurDeFeuilleMatch($match_id, $joueur_id) {
+    $pdo = getDbConnection();
+    $stmt = $pdo->prepare("DELETE FROM feuillematch WHERE match_id = :match_id AND joueur_id = :joueur_id");
+    $stmt->execute(['match_id' => $match_id, 'joueur_id' => $joueur_id]);
 }
 
 ?>

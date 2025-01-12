@@ -34,14 +34,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lieu = $_POST['lieu'];
     $resultat = $_POST['resultat'];
 
-    if (empty($date_match) || empty($heure_match) || empty($equipe_adverse) || empty($lieu) || empty($resultat)) {
-        $message = "Tous les champs sont obligatoires.";
+    // Combiner date et heure pour la comparaison
+    $datetime_saisie = new DateTime($date_match . ' ' . $heure_match);
+    $datetime_actuelle = new DateTime(); // Date et heure actuelles
+
+    // Vérifier si la date et l'heure sont dans le futur ou égales à l'heure actuelle
+    if ($datetime_saisie < $datetime_actuelle) {
+        $message = "La date et l'heure du match doivent être au moins égales à la date et l'heure actuelles.";
     } else {
-        if (modifierMatch($id, $date_match, $heure_match, $equipe_adverse, $lieu, $resultat)) {
-            header("Location: ListeMatch.php"); // Redirige après la modification
+        // Si la date et l'heure sont valides, on peut insérer dans la base de données
+        if (modifierMatch($date_match, $heure_match, $equipe_adverse, $lieu, $resultat)) {
+            header("Location: ListeMatch.php"); // Redirection vers la liste des matchs
             exit();
         } else {
-            $message = "Erreur lors de la modification.";
+            $message = "Erreur lors de la création du match.";
         }
     }
 }
