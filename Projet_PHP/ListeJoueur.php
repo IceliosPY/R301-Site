@@ -46,8 +46,6 @@ if (isset($_GET['supprimer'])) {
 
     <h1>Liste des joueurs</h1>
 
-    <a href="?deconnexion=true">Se déconnecter</a>
-
     <!-- Bouton pour ajouter un joueur -->
     <div>
         <a href="CreationJoueur.php" class="btn btn-primary">Ajouter un joueur</a>
