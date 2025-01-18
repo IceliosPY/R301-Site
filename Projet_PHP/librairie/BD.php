@@ -232,48 +232,47 @@ function supprimerJoueurDeFeuilleMatch($match_id, $joueur_id) {
     $stmt->execute(['match_id' => $match_id, 'joueur_id' => $joueur_id]);
 }
 
-// Fonction pour calculer les statistiques des matchs
-function getStatistiquesMatchs() {
+// Fonction pour récupérer les statistiques des matchs et des joueurs
+function getStatistiques() {
     $pdo = getDbConnection();
+    
+    // Statistiques générales sur les matchs
+    $query = "SELECT 
+                COUNT(*) AS total_matchs,
+                SUM(CASE WHEN resultat = 'gagné' THEN 1 ELSE 0 END) AS matchs_gagnés,
+                SUM(CASE WHEN resultat = 'perdu' THEN 1 ELSE 0 END) AS matchs_perdus,
+                SUM(CASE WHEN resultat = 'nul' THEN 1 ELSE 0 END) AS matchs_nuls
+              FROM matchs";
+    $stmt = $pdo->query($query);
+    $matchs = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Récupérer tous les matchs avec leur résultat
-    $stmt = $pdo->query("SELECT resultat FROM matchs WHERE resultat IS NOT NULL AND resultat != ''");
-    $matchs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Initialisation des compteurs
-    $gagnes = 0;
-    $perdus = 0;
-    $nuls = 0;
-    $total = count($matchs);
-
-    // Compter les matchs gagnés, perdus, et nuls
-    foreach ($matchs as $match) {
-        switch (strtolower($match['resultat'])) {
-            case 'gagné':
-                $gagnes++;
-                break;
-            case 'perdu':
-                $perdus++;
-                break;
-            case 'nul':
-                $nuls++;
-                break;
-        }
-    }
-
-    // Calculer les pourcentages
-    $pourcentageGagnes = ($total > 0) ? ($gagnes / $total) * 100 : 0;
-    $pourcentagePerdus = ($total > 0) ? ($perdus / $total) * 100 : 0;
-    $pourcentageNuls = ($total > 0) ? ($nuls / $total) * 100 : 0;
+    // Récupérer les statistiques des joueurs
+    $queryJoueurs = "SELECT 
+                        j.id,
+                        j.nom,
+                        j.prenom,
+                        j.statut,
+                        COUNT(CASE WHEN f.statut = 'titulaire' THEN 1 END) AS titulaire_count,
+                        COUNT(CASE WHEN f.statut = 'remplacant' THEN 1 END) AS remplaçant_count,
+                        AVG(j.evaluation) AS moyenne_evaluation,
+                        SUM(CASE WHEN m.resultat = 'gagné' THEN 1 ELSE 0 END) / COUNT(*) * 100 AS pourcentage_victoires,
+                        -- Calcul du poste préféré basé sur les occurrences des différents postes
+                        (SELECT f.poste_prefere
+                         FROM feuillematch f
+                         WHERE f.joueur_id = j.id
+                         GROUP BY f.poste_prefere
+                         ORDER BY COUNT(f.poste_prefere) DESC
+                         LIMIT 1) AS poste_prefere
+                     FROM joueurs j
+                     LEFT JOIN feuillematch f ON j.id = f.joueur_id
+                     LEFT JOIN matchs m ON f.match_id = m.id
+                     GROUP BY j.id";
+    $stmtJoueurs = $pdo->query($queryJoueurs);
+    $joueurs = $stmtJoueurs->fetchAll(PDO::FETCH_ASSOC);
 
     return [
-        'total' => $total,
-        'gagnes' => $gagnes,
-        'perdus' => $perdus,
-        'nuls' => $nuls,
-        'pourcentageGagnes' => $pourcentageGagnes,
-        'pourcentagePerdus' => $pourcentagePerdus,
-        'pourcentageNuls' => $pourcentageNuls
+        'matchs' => $matchs,
+        'joueurs' => $joueurs
     ];
 }
 

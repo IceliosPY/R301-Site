@@ -7,6 +7,8 @@ CREATE TABLE joueurs (
     taille FLOAT NOT NULL,
     poids FLOAT NOT NULL,
     statut ENUM('Actif', 'Blessé', 'Suspendu', 'Absent') NOT NULL
+    commentaires VARCHAR(255),
+    evaluation TINYINT(1) DEFAULT 0 CHECK (evaluation BETWEEN 1 AND 5)
 );
 
 CREATE TABLE utilisateurs (
@@ -16,6 +18,15 @@ CREATE TABLE utilisateurs (
 );
 
 INSERT INTO utilisateurs (username, password) VALUES ('Joueur@gmail.com', 'Password');
+
+CREATE TABLE matchs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    date_match DATE NOT NULL,
+    heure_match TIME NOT NULL,
+    equipe_adverse VARCHAR(255) NOT NULL,
+    lieu ENUM('Domicile', 'Extérieur') NOT NULL,
+    resultat VARCHAR(255)
+);
 
 CREATE OR REPLACE TABLE feuillematch (
     id INT AUTO_INCREMENT PRIMARY KEY,
