@@ -33,11 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Vérifier si l'insertion a réussi
         if ($match_id) {
-            // Enregistrer l'ID du match dans la session pour l'utiliser dans ModifierFeuilleMatch.php
-            $_SESSION['match_id_temporaire'] = $match_id;
-
-            // Rediriger vers la page de création de la feuille de match
-            header("Location: ModifierFeuilleMatch.php?match_id=" . $match_id);
+            // Rediriger vers la page de liste des matchs
+            header("Location: ListeMatch.php?match_id=" . $match_id);
             exit();
         } else {
             $message = "Erreur lors de la création du match.";
