@@ -63,25 +63,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     } elseif (isset($_POST['valider'])) {
-        // Validation finale : Vérifier qu'il y a exactement 8 joueurs sélectionnés
         $total_joueurs = count($_SESSION['feuille_match'][$match_id]['titulaire']) + count($_SESSION['feuille_match'][$match_id]['remplacant']);
         if ($total_joueurs !== 8) {
             $message = "Vous devez sélectionner exactement 5 titulaires et 3 remplaçants (8 joueurs au total).";
         } else {
-            // Mettre à jour la base de données
-            supprimerJoueurDeFeuilleMatch($match_id, $joueur_id);
+            // Supprimer les joueurs qui ne sont plus dans la feuille de match
+            foreach ($_SESSION['feuille_match'][$match_id]['titulaire'] as $joueur_id) {
+                supprimerJoueurDeFeuilleMatch($match_id, $joueur_id);  // Supprimer les anciens titulaires
+            }
+            foreach ($_SESSION['feuille_match'][$match_id]['remplacant'] as $joueur_id) {
+                supprimerJoueurDeFeuilleMatch($match_id, $joueur_id);  // Supprimer les anciens remplaçants
+            }
+    
+            // Ajouter les nouveaux joueurs à la base de données
             foreach ($_SESSION['feuille_match'][$match_id]['titulaire'] as $joueur_id) {
                 ajouterJoueurFeuilleMatch($match_id, $joueur_id, 'titulaire');
             }
             foreach ($_SESSION['feuille_match'][$match_id]['remplacant'] as $joueur_id) {
                 ajouterJoueurFeuilleMatch($match_id, $joueur_id, 'remplacant');
             }
-
+    
             // Redirection après mise à jour réussie
             header("Location: ListeMatch.php");
-            exit; // Assurez-vous que le script s'arrête après la redirection
+            exit;
         }
-    }
+    }    
 }
 
 ?>
