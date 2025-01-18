@@ -66,7 +66,7 @@ function getAllPlayers($pdo) {
  */
 function getTousLesJoueurs(): array {
     $pdo = getDbConnection();
-    $stmt = $pdo->query("SELECT id, nom, prenom, numero_licence, date_naissance, taille, poids, statut FROM joueurs");
+    $stmt = $pdo->query("SELECT id, nom, prenom, numero_licence, date_naissance, taille, poids, statut, evaluation FROM joueurs");
     return $stmt->fetchAll();
 }
 
@@ -77,12 +77,13 @@ function getJoueurParId($id) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function modifierJoueur($id, $nom, $prenom, $numero_licence, $date_naissance, $taille, $poids, $statut) {
+function modifierJoueur($id, $nom, $prenom, $numero_licence, $date_naissance, $taille, $poids, $statut, $commentaires, $evaluation) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("
         UPDATE joueurs 
         SET nom = :nom, prenom = :prenom, numero_licence = :numero_licence, 
-            date_naissance = :date_naissance, taille = :taille, poids = :poids, statut = :statut
+            date_naissance = :date_naissance, taille = :taille, poids = :poids, 
+            statut = :statut, commentaires = :commentaires, evaluation = :evaluation
         WHERE id = :id
     ");
     return $stmt->execute([
@@ -93,7 +94,9 @@ function modifierJoueur($id, $nom, $prenom, $numero_licence, $date_naissance, $t
         'date_naissance' => $date_naissance,
         'taille' => $taille,
         'poids' => $poids,
-        'statut' => $statut
+        'statut' => $statut,
+        'commentaires' => $commentaires,
+        'evaluation' => $evaluation,
     ]);
 }
 
@@ -227,6 +230,51 @@ function supprimerJoueurDeFeuilleMatch($match_id, $joueur_id) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("DELETE FROM feuillematch WHERE match_id = :match_id AND joueur_id = :joueur_id");
     $stmt->execute(['match_id' => $match_id, 'joueur_id' => $joueur_id]);
+}
+
+// Fonction pour calculer les statistiques des matchs
+function getStatistiquesMatchs() {
+    $pdo = getDbConnection();
+
+    // Récupérer tous les matchs avec leur résultat
+    $stmt = $pdo->query("SELECT resultat FROM matchs WHERE resultat IS NOT NULL AND resultat != ''");
+    $matchs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Initialisation des compteurs
+    $gagnes = 0;
+    $perdus = 0;
+    $nuls = 0;
+    $total = count($matchs);
+
+    // Compter les matchs gagnés, perdus, et nuls
+    foreach ($matchs as $match) {
+        switch (strtolower($match['resultat'])) {
+            case 'gagné':
+                $gagnes++;
+                break;
+            case 'perdu':
+                $perdus++;
+                break;
+            case 'nul':
+                $nuls++;
+                break;
+        }
+    }
+
+    // Calculer les pourcentages
+    $pourcentageGagnes = ($total > 0) ? ($gagnes / $total) * 100 : 0;
+    $pourcentagePerdus = ($total > 0) ? ($perdus / $total) * 100 : 0;
+    $pourcentageNuls = ($total > 0) ? ($nuls / $total) * 100 : 0;
+
+    return [
+        'total' => $total,
+        'gagnes' => $gagnes,
+        'perdus' => $perdus,
+        'nuls' => $nuls,
+        'pourcentageGagnes' => $pourcentageGagnes,
+        'pourcentagePerdus' => $pourcentagePerdus,
+        'pourcentageNuls' => $pourcentageNuls
+    ];
 }
 
 ?>

@@ -35,11 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $taille = (float) $_POST['taille'];
     $poids = (float) $_POST['poids'];
     $statut = $_POST['statut'];
+    $commentaires = $_POST['commentaires'];
+    $evaluation = (int) $_POST['evaluation'];
 
     if (empty($nom) || empty($prenom) || empty($numero_licence) || empty($date_naissance) || empty($taille) || empty($poids) || empty($statut)) {
         $message = "Tous les champs sont obligatoires.";
     } else {
-        if (modifierJoueur($id, $nom, $prenom, $numero_licence, $date_naissance, $taille, $poids, $statut)) {
+        // Mettre à jour les informations du joueur, y compris l'évaluation
+        if (modifierJoueur($id, $nom, $prenom, $numero_licence, $date_naissance, $taille, $poids, $statut, $commentaires, $evaluation)) {
             header("Location: ListeJoueur.php");
             exit();
         } else {
@@ -47,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -90,9 +94,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <select id="statut" name="statut" required>
                 <option value="Actif" <?= $joueur['statut'] === 'Actif' ? 'selected' : '' ?>>Actif</option>
                 <option value="Blessé" <?= $joueur['statut'] === 'Blessé' ? 'selected' : '' ?>>Blessé</option>
-                <option value="Suspendu" <?= $joueur['statut'] === 'Suspendu' ? 'selected' : '' ?>>Suspendu</option>
+                    <option value="Suspendu" <?= $joueur['statut'] === 'Suspendu' ? 'selected' : '' ?>>Suspendu</option>
                 <option value="Absent" <?= $joueur['statut'] === 'Absent' ? 'selected' : '' ?>>Absent</option>
             </select><br>
+
+            <label for="commentaires">Commentaires :</label>
+            <textarea id="commentaires" name="commentaires" maxlength="255"><?= htmlspecialchars($joueur['commentaires'] ?? '') ?></textarea><br>
+
+            <label for="evaluation">Évaluation (1 à 5) :</label>
+            <input type="number" id="evaluation" name="evaluation" min="1" max="5" step="1" value="<?= htmlspecialchars($joueur['evaluation']) ?>"><br>
 
             <button type="submit">Enregistrer</button>
         </form>

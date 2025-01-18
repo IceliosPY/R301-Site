@@ -64,6 +64,7 @@ if (isset($_GET['supprimer'])) {
                     <th>Taille (cm)</th>
                     <th>Poids (kg)</th>
                     <th>Statut</th>
+                    <th>Évaluation</th>
                 </tr>
             </thead>
             <tbody>
@@ -76,10 +77,13 @@ if (isset($_GET['supprimer'])) {
                         <td><?= htmlspecialchars($joueur['taille']) ?></td>
                         <td><?= htmlspecialchars($joueur['poids']) ?></td>
                         <td><?= htmlspecialchars($joueur['statut']) ?></td>
+                        <td><?= htmlspecialchars($joueur['evaluation'] ?: 'Non noté') ?></td>
                         <td>
-                        <!-- Lien pour modifier le joueur -->
+                        <!-- Lien pour modifier et supprimer le joueur -->
                         <a href="ModifierJoueur.php?id=<?= urlencode($joueur['id']) ?>">Modifier</a>
                         <a href="?supprimer=<?= $joueur['id'] ?>" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce joueur ?')">Supprimer</a>
+                        <!-- Lien pour afficher les commentaires -->
+                        <a href="Commentaire.php?id=<?= urlencode($joueur['id']) ?>" class="btn btn-secondary">Commentaires</a>
                     </td>
                     </tr>
                 <?php endforeach; ?>
