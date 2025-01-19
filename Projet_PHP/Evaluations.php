@@ -54,6 +54,30 @@ if (!isset($_SESSION['feuille_match'][$match_id])) {
 
 // Récupérer les joueurs actifs
 $joueurs_actifs = getJoueursActifs();
+
+// Récupérer les évaluations actuelles des joueurs pour ce match
+$evaluationsExistantes = getEvaluations($match_id);
+
+// Convertir en tableau associatif avec joueur_id comme clé
+$evaluations = [];
+foreach ($evaluationsExistantes as $evaluation) {
+    $evaluations[$evaluation['joueur_id']] = $evaluation['evaluation'];
+}
+
+// Traitement du formulaire d'évaluation
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    foreach ($_POST['evaluations'] as $joueur_id => $evaluation) {
+        // Vérifie que l'évaluation est un nombre entre 1 et 5
+        if (is_numeric($evaluation) && $evaluation >= 1 && $evaluation <= 5) {
+            // Mettre à jour l'évaluation du joueur dans la base de données
+            setEvaluation($match_id, $joueur_id, (int)$evaluation);
+        }
+    }
+    $message = "Évaluations enregistrées avec succès.";
+    // Redirection vers ListeMatch.php après la soumission
+    header("Location: ListeMatch.php");
+    exit; // Assurez-vous d'appeler exit après une redirection
+}
 ?>
 
 <!DOCTYPE html>
@@ -75,33 +99,50 @@ $joueurs_actifs = getJoueursActifs();
 
     <h2>Joueurs sélectionnés</h2>
     <h3>Titulaires</h3>
+    <form method="POST">
     <ul>
-        <?php foreach ($_SESSION['feuille_match'][$match_id]['titulaire'] as $joueur_id => $poste_prefere): ?>
-            <?php 
-                $joueur = array_filter($joueurs_actifs, fn($j) => $j['id'] === $joueur_id);
-                $joueur = reset($joueur);
-            ?>
-            <li>
-                <?= htmlspecialchars($joueur['nom'] . ' ' . $joueur['prenom'] . ' - ' . $poste_prefere) ?>
-            </li>
-        <?php endforeach; ?>
-    </ul>
+    <?php foreach ($_SESSION['feuille_match'][$match_id]['titulaire'] as $joueur_id => $poste_prefere): ?>
+        <?php 
+            $joueur = array_filter($joueurs_actifs, fn($j) => $j['id'] === $joueur_id);
+            $joueur = reset($joueur);
+        ?>
+        <li>
+            <?= htmlspecialchars($joueur['nom'] . ' ' . $joueur['prenom'] . ' - ' . $poste_prefere) ?>
+            <label for="evaluation_<?= $joueur_id ?>">Évaluation (1-5):</label>
+            <select name="evaluations[<?= $joueur_id ?>]" id="evaluation_<?= $joueur_id ?>">
+                <option value="1" <?= isset($evaluations[$joueur_id]) && $evaluations[$joueur_id] == 1 ? 'selected' : '' ?>>1</option>
+                <option value="2" <?= isset($evaluations[$joueur_id]) && $evaluations[$joueur_id] == 2 ? 'selected' : '' ?>>2</option>
+                <option value="3" <?= isset($evaluations[$joueur_id]) && $evaluations[$joueur_id] == 3 ? 'selected' : '' ?>>3</option>
+                <option value="4" <?= isset($evaluations[$joueur_id]) && $evaluations[$joueur_id] == 4 ? 'selected' : '' ?>>4</option>
+                <option value="5" <?= isset($evaluations[$joueur_id]) && $evaluations[$joueur_id] == 5 ? 'selected' : '' ?>>5</option>
+            </select>
+        </li>
+    <?php endforeach; ?>
+</ul>
 
-    <h3>Remplaçants</h3>
-    <ul>
-        <?php foreach ($_SESSION['feuille_match'][$match_id]['remplacant'] as $joueur_id => $poste_prefere): ?>
-            <?php 
-                $joueur = array_filter($joueurs_actifs, fn($j) => $j['id'] === $joueur_id);
-                $joueur = reset($joueur);
-            ?>
-            <li>
-                <?= htmlspecialchars($joueur['nom'] . ' ' . $joueur['prenom'] . ' - ' . $poste_prefere) ?>
-            </li>
-        <?php endforeach; ?>
-    </ul>
 
-    <h2>Evaluation Complète</h2>
-    <p>Cette page affiche la feuille de match. Aucune modification n'est permise.</p>
-    
+        <h3>Remplaçants</h3>
+        <ul>
+    <?php foreach ($_SESSION['feuille_match'][$match_id]['remplacant'] as $joueur_id => $poste_prefere): ?>
+        <?php 
+            $joueur = array_filter($joueurs_actifs, fn($j) => $j['id'] === $joueur_id);
+            $joueur = reset($joueur);
+        ?>
+        <li>
+            <?= htmlspecialchars($joueur['nom'] . ' ' . $joueur['prenom'] . ' - ' . $poste_prefere) ?>
+            <label for="evaluation_<?= $joueur_id ?>">Évaluation (1-5):</label>
+            <select name="evaluations[<?= $joueur_id ?>]" id="evaluation_<?= $joueur_id ?>">
+                <option value="1" <?= isset($evaluations[$joueur_id]) && $evaluations[$joueur_id] == 1 ? 'selected' : '' ?>>1</option>
+                <option value="2" <?= isset($evaluations[$joueur_id]) && $evaluations[$joueur_id] == 2 ? 'selected' : '' ?>>2</option>
+                <option value="3" <?= isset($evaluations[$joueur_id]) && $evaluations[$joueur_id] == 3 ? 'selected' : '' ?>>3</option>
+                <option value="4" <?= isset($evaluations[$joueur_id]) && $evaluations[$joueur_id] == 4 ? 'selected' : '' ?>>4</option>
+                <option value="5" <?= isset($evaluations[$joueur_id]) && $evaluations[$joueur_id] == 5 ? 'selected' : '' ?>>5</option>
+            </select>
+        </li>
+    <?php endforeach; ?>
+</ul>
+
+        <button type="submit">Enregistrer les évaluations</button>
+    </form>
 </body>
 </html>

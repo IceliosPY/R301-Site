@@ -263,8 +263,9 @@ function getStatistiques() {
                         fm.poste_prefere,
                         COUNT(CASE WHEN fm.statut = 'titulaire' THEN 1 END) AS titulaire_count,
                         COUNT(CASE WHEN fm.statut = 'remplaçant' THEN 1 END) AS remplaçant_count,
-                        AVG(j.evaluation) AS moyenne_evaluation,
-                        SUM(CASE WHEN m.resultat_equipe > m.resultat_adverse THEN 1 ELSE 0 END) / COUNT(*) * 100 AS pourcentage_victoires
+                        AVG(fm.evaluation) AS moyenne_evaluation,  -- Calculer la moyenne des évaluations depuis la table feuillematch
+                        COUNT(m.id) AS total_matchs,  -- Total des matchs pour le joueur
+                        SUM(CASE WHEN m.resultat_equipe > m.resultat_adverse THEN 1 ELSE 0 END) AS matchs_gagnés
                     FROM joueurs j
                     LEFT JOIN feuillematch fm ON j.id = fm.joueur_id
                     LEFT JOIN matchs m ON fm.match_id = m.id
@@ -274,6 +275,19 @@ function getStatistiques() {
                     HAVING COUNT(fm.match_id) > 0";  // Exclure les joueurs sans matchs
     $stmtJoueurs = $pdo->query($queryJoueurs);
     $joueurs = $stmtJoueurs->fetchAll(PDO::FETCH_ASSOC);
+
+    // Calcul du pourcentage de victoires et gestion des joueurs sans match
+    foreach ($joueurs as &$joueur) {
+        // Vérifie si le joueur a des matchs
+        if ($joueur['total_matchs'] > 0) {
+            $joueur['pourcentage_victoires'] = ($joueur['matchs_gagnés'] / $joueur['total_matchs']) * 100;
+            $joueur['selections_consecutives'] = getSelectionsConsecutives($joueur['id']);  // Ajouter les sélections consécutives
+        } else {
+            $joueur['pourcentage_victoires'] = 'Aucune donnée';  // Pas de match, donc message spécifique
+            $joueur['moyenne_evaluation'] = 'Aucune donnée';     // Pas de match, donc pas d'évaluation
+            $joueur['selections_consecutives'] = 'Aucune donnée';  // Pas de match, donc pas de sélections consécutives
+        }
+    }
 
     return [
         'matchs' => $matchs,
@@ -299,14 +313,75 @@ function modifierResultat($id, $resultat_equipe, $resultat_adverse) {
     return $stmt->execute();
 }
 
-function ajouterEvaluation($match_id, $joueur_id, $evaluation) {
-    $pdo = getBdConnection();
-    $sql = "INSERT INTO Evaluations (match_id, joueur_id, evaluation) VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE evaluation = ?";
+// Récupère les évaluations des joueurs pour un match donné
+function getEvaluations($match_id) {
+    $pdo = getDbConnection(); // Remplace par ta fonction de connexion à la base de données
+    $sql = "SELECT joueur_id, evaluation FROM feuillematch WHERE match_id = :match_id";
+    
     $stmt = $pdo->prepare($sql);
-    $stmt->bind_param("iiii", $match_id, $joueur_id, $evaluation, $evaluation);
-    $stmt->execute();
-    $stmt->close();
+    $stmt->execute([':match_id' => $match_id]);
+    
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Met à jour l'évaluation d'un joueur pour un match donné
+function setEvaluation($match_id, $joueur_id, $evaluation) {
+    $pdo = getDbConnection(); // Remplace par ta fonction de connexion à la base de données
+    $sql = "UPDATE feuillematch SET evaluation = :evaluation WHERE match_id = :match_id AND joueur_id = :joueur_id";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ':match_id' => $match_id,
+        ':joueur_id' => $joueur_id,
+        ':evaluation' => $evaluation
+    ]);
+}
+
+function getSelectionsConsecutives($joueur_id) {
+    $pdo = getDbConnection();
+    
+    // Récupérer tous les matchs pour le joueur, triés par date et heure
+    $query = "SELECT 
+                m.date_match, 
+                m.heure_match
+              FROM matchs m
+              JOIN feuillematch fm ON m.id = fm.match_id
+              WHERE fm.joueur_id = :joueur_id
+              ORDER BY m.date_match ASC, m.heure_match ASC";
+    
+    $stmt = $pdo->prepare($query);
+    $stmt->execute(['joueur_id' => $joueur_id]);
+    $matchs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Si aucun match n'est trouvé, retourner 0
+    if (empty($matchs)) {
+        return 0;
+    }
+
+    $maxConsecutifs = 1;  // Minimum un match consécutif
+    $consecutifsActuels = 1;
+    
+    // Comparer les dates et heures des matchs pour calculer les consécutifs
+    for ($i = 1; $i < count($matchs); $i++) {
+        $dateActuelle = $matchs[$i]['date_match'];
+        $heureActuelle = $matchs[$i]['heure_match'];
+        $datePrecedente = $matchs[$i - 1]['date_match'];
+        $heurePrecedente = $matchs[$i - 1]['heure_match'];
+        
+        // Comparer la date et l'heure pour vérifier si le match est consécutif
+        $dateDiff = (strtotime($dateActuelle) - strtotime($datePrecedente)) / 86400;  // Différence en jours
+        
+        // Vérifier si les matchs sont consécutifs (différence de 1 jour ou moins)
+        if ($dateDiff == 1 || ($dateDiff == 0 && strtotime($heureActuelle) > strtotime($heurePrecedente))) {
+            $consecutifsActuels++;
+        } else {
+            $maxConsecutifs = max($maxConsecutifs, $consecutifsActuels);
+            $consecutifsActuels = 1;  // Réinitialiser le compteur pour la nouvelle séquence
+        }
+    }
+    
+    // Retourner le maximum des matchs consécutifs
+    return max($maxConsecutifs, $consecutifsActuels);
 }
 
 ?>

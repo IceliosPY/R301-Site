@@ -27,39 +27,48 @@ $statistiques = getStatistiques();
 
     <!-- Statistiques générales sur les matchs -->
     <h2>Statistiques des matchs</h2>
-    <p>Total des matchs : <?= $statistiques['matchs']['total_matchs'] ?></p>
-    <p>Matchs gagnés : <?= $statistiques['matchs']['matchs_gagnés'] ?> (<?= number_format($statistiques['matchs']['matchs_gagnés'] / $statistiques['matchs']['total_matchs'] * 100, 2) ?>%)</p>
-    <p>Matchs perdus : <?= $statistiques['matchs']['matchs_perdus'] ?> (<?= number_format($statistiques['matchs']['matchs_perdus'] / $statistiques['matchs']['total_matchs'] * 100, 2) ?>%)</p>
-    <p>Matchs nuls : <?= $statistiques['matchs']['matchs_nuls'] ?> (<?= number_format($statistiques['matchs']['matchs_nuls'] / $statistiques['matchs']['total_matchs'] * 100, 2) ?>%)</p>
+    <?php if ($statistiques['matchs']['total_matchs'] > 0): ?>
+        <p>Total des matchs : <?= $statistiques['matchs']['total_matchs'] ?></p>
+        <p>Matchs gagnés : <?= $statistiques['matchs']['matchs_gagnés'] ?> (<?= number_format($statistiques['matchs']['matchs_gagnés'] / $statistiques['matchs']['total_matchs'] * 100, 2) ?>%)</p>
+        <p>Matchs perdus : <?= $statistiques['matchs']['matchs_perdus'] ?> (<?= number_format($statistiques['matchs']['matchs_perdus'] / $statistiques['matchs']['total_matchs'] * 100, 2) ?>%)</p>
+        <p>Matchs nuls : <?= $statistiques['matchs']['matchs_nuls'] ?> (<?= number_format($statistiques['matchs']['matchs_nuls'] / $statistiques['matchs']['total_matchs'] * 100, 2) ?>%)</p>
+    <?php else: ?>
+        <p>Aucune donnée disponible pour les matchs.</p>
+    <?php endif; ?>
 
     <!-- Tableau des statistiques des joueurs -->
     <h2>Statistiques des joueurs</h2>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Statut</th>
-                <th>Poste Préféré</th>
-                <th>Titulaire (sélections)</th>
-                <th>Remplaçant (sélections)</th>
-                <th>Moyenne évaluation</th>
-                <th>% matchs gagnés</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($statistiques['joueurs'] as $joueur) : ?>
+    <?php if (!empty($statistiques['joueurs'])): ?>
+        <table border="1">
+            <thead>
                 <tr>
-                    <td><?= htmlspecialchars($joueur['nom'] . ' ' . $joueur['prenom']) ?></td>
-                    <td><?= htmlspecialchars($joueur['statut']) ?></td>
-                    <td><?= htmlspecialchars($joueur['poste_prefere']) ?></td>
-                    <td><?= $joueur['titulaire_count'] ?></td>
-                    <td><?= $joueur['remplaçant_count'] ?></td>
-                    <td><?= number_format($joueur['moyenne_evaluation'], 2) ?></td>
-                    <td><?= number_format($joueur['pourcentage_victoires'], 2) ?>%</td>
+                    <th>Nom</th>
+                    <th>Statut</th>
+                    <th>Poste Préféré</th>
+                    <th>Titulaire (sélections)</th>
+                    <th>Remplaçant (sélections)</th>
+                    <th>Moyenne évaluation</th>
+                    <th>% matchs gagnés</th>
+                    <th>Sélections consécutives</th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-
+            </thead>
+            <tbody>
+                <?php foreach ($statistiques['joueurs'] as $joueur) : ?>
+                    <tr>
+                        <td><?= htmlspecialchars($joueur['nom'] . ' ' . $joueur['prenom']) ?></td>
+                        <td><?= htmlspecialchars($joueur['statut']) ?></td>
+                        <td><?= htmlspecialchars($joueur['poste_prefere']) ?></td>
+                        <td><?= $joueur['titulaire_count'] ?></td>
+                        <td><?= $joueur['remplaçant_count'] ?></td>
+                        <td><?= $joueur['moyenne_evaluation'] !== null ? number_format($joueur['moyenne_evaluation'], 2) : 'Aucune donnée' ?></td>
+                        <td><?= $joueur['pourcentage_victoires'] !== null ? number_format($joueur['pourcentage_victoires'], 2) . "%" : 'Aucune donnée' ?></td>
+                        <td><?= $joueur['selections_consecutives'] !== null ? $joueur['selections_consecutives'] : 'Aucune donnée' ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p>Aucune donnée disponible pour les joueurs.</p>
+    <?php endif; ?>
 </body>
 </html>
