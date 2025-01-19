@@ -80,6 +80,9 @@ if (isset($_GET['supprimer'])) {
                             <a href="ModifierMatch.php?id=<?= urlencode($match['id']) ?>">Modifier</a>
                             <a href="ModifierFeuilleMatch.php?match_id=<?= urlencode($match['id']) ?>">Voir/Modifier la sélection</a>
                             <a href="?supprimer=<?= $match['id'] ?>" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce match ?')">Supprimer</a>
+                            <!-- Nouveau bouton pour rediriger vers Resultat.php -->
+                            <a href="Resultat.php?id=<?= urlencode($match['id']) ?>" class="btn btn-info">Modifier le résultat</a>
+                            <a href="Evaluations.php?id=<?= urlencode($match['id']) ?>" class="btn btn-info">Évaluer</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>

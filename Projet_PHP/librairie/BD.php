@@ -180,16 +180,14 @@ function getMatchParId($id) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function modifierMatch($id, $date_match, $heure_match, $equipe_adverse, $lieu, $resultat_equipe, $resultat_adverse) {
+function modifierMatch($id, $date_match, $heure_match, $equipe_adverse, $lieu) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("
         UPDATE matchs
         SET date_match = :date_match,
             heure_match = :heure_match,
             equipe_adverse = :equipe_adverse,
-            lieu = :lieu,
-            resultat_equipe = :resultat_equipe,
-            resultat_adverse = :resultat_adverse
+            lieu = :lieu
         WHERE id = :id
     ");
     return $stmt->execute([
@@ -197,15 +195,13 @@ function modifierMatch($id, $date_match, $heure_match, $equipe_adverse, $lieu, $
         'heure_match' => $heure_match,
         'equipe_adverse' => $equipe_adverse,
         'lieu' => $lieu,
-        'resultat_equipe' => $resultat_equipe !== null ? $resultat_equipe : null,
-        'resultat_adverse' => $resultat_adverse !== null ? $resultat_adverse : null,
         'id' => $id
     ]);
 }
 
 function getJoueursActifs() {
     $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT id, nom, prenom, taille, poids, poste_prefere FROM joueurs WHERE statut = 'actif' ORDER BY nom, prenom");
+    $stmt = $pdo->prepare("SELECT id, nom, prenom, taille, poids FROM joueurs WHERE statut = 'actif' ORDER BY nom, prenom");
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -228,7 +224,7 @@ function getJoueursDeFeuilleMatchComplet($match_id) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("SELECT joueur_id, statut, poste_prefere FROM feuillematch WHERE match_id = :match_id");
     $stmt->execute(['match_id' => $match_id]);
-    return $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 function supprimerJoueurDeFeuilleMatch($match_id, $joueur_id) {
@@ -281,6 +277,34 @@ function getStatistiques() {
         'matchs' => $matchs,
         'joueurs' => $joueurs
     ];
+}
+
+/**
+ * Modifier les résultats d'un match
+ *
+ * @param int $id
+ * @param int|null $resultat_equipe
+ * @param int|null $resultat_adverse
+ * @return bool
+ */
+function modifierResultat($id, $resultat_equipe, $resultat_adverse) {
+    $pdo = getDbConnection(); // Connexion à la base de données
+    $sql = "UPDATE matchs SET resultat_equipe = :resultat_equipe, resultat_adverse = :resultat_adverse WHERE id = :id";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':resultat_equipe', $resultat_equipe, PDO::PARAM_INT);
+    $stmt->bindParam(':resultat_adverse', $resultat_adverse, PDO::PARAM_INT);
+    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    return $stmt->execute();
+}
+
+function ajouterEvaluation($match_id, $joueur_id, $evaluation) {
+    $pdo = getBdConnection();
+    $sql = "INSERT INTO Evaluations (match_id, joueur_id, evaluation) VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE evaluation = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bind_param("iiii", $match_id, $joueur_id, $evaluation, $evaluation);
+    $stmt->execute();
+    $stmt->close();
 }
 
 ?>

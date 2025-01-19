@@ -17,6 +17,34 @@ if (!isset($_GET['match_id']) || empty($_GET['match_id'])) {
 $match_id = (int)$_GET['match_id'];
 $message = "";
 
+// Récupérer tous les matchs
+$matchs = getAllMatchs();
+
+// Trouver le match spécifique avec l'ID fourni
+$match = null;
+foreach ($matchs as $m) {
+    if ($m['id'] === $match_id) {
+        $match = $m;
+        break;
+    }
+}
+
+if (!$match) {
+    die("Match non trouvé.");
+}
+
+// Créer un objet DateTime pour la date/heure du match
+$date_match = new DateTime($match['date_match'] . ' ' . $match['heure_match']);
+$current_time = new DateTime(); // Heure actuelle
+
+// Vérifier si la date du match est passée
+$is_match_past = $date_match < $current_time;
+
+if ($is_match_past) {
+    // Empêcher les modifications si le match est passé
+    $message = "Ce match est déjà passé. Vous ne pouvez plus modifier la feuille de match.";
+}
+
 // Initialiser ou récupérer les joueurs stockés en session
 if (!isset($_SESSION['feuille_match'][$match_id])) {
     $_SESSION['feuille_match'][$match_id] = [
@@ -40,7 +68,7 @@ if (!isset($_SESSION['feuille_match'][$match_id])) {
 $joueurs_actifs = getJoueursActifs();
 
 // Gestion des ajouts/suppressions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_match_past) {
     if (isset($_POST['action'])) {
         $joueur_id = (int)($_POST['joueur_id'] ?? 0);
         $statut = $_POST['statut'] ?? '';
