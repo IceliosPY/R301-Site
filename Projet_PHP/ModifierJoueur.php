@@ -36,13 +36,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $poids = (float) $_POST['poids'];
     $statut = $_POST['statut'];
     $commentaires = $_POST['commentaires'];
-    $evaluation = (int) $_POST['evaluation'];
 
     if (empty($nom) || empty($prenom) || empty($numero_licence) || empty($date_naissance) || empty($taille) || empty($poids) || empty($statut)) {
         $message = "Tous les champs sont obligatoires.";
     } else {
         // Mettre à jour les informations du joueur, y compris l'évaluation
-        if (modifierJoueur($id, $nom, $prenom, $numero_licence, $date_naissance, $taille, $poids, $statut, $commentaires, $evaluation)) {
+        if (modifierJoueur($id, $nom, $prenom, $numero_licence, $date_naissance, $taille, $poids, $statut, $commentaires)) {
             header("Location: ListeJoueur.php");
             exit();
         } else {
@@ -100,9 +99,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <label for="commentaires">Commentaires :</label>
             <textarea id="commentaires" name="commentaires" maxlength="255"><?= htmlspecialchars($joueur['commentaires'] ?? '') ?></textarea><br>
-
-            <label for="evaluation">Évaluation (1 à 5) :</label>
-            <input type="number" id="evaluation" name="evaluation" min="1" max="5" step="1" value="<?= htmlspecialchars($joueur['evaluation']) ?>"><br>
 
             <button type="submit">Enregistrer</button>
         </form>

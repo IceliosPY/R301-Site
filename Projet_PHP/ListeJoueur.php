@@ -25,11 +25,20 @@ $joueurs = getTousLesJoueurs();
 if (isset($_GET['supprimer'])) {
     $id = (int) $_GET['supprimer'];
     if (supprimerJoueur($id)) {
-        $message = "Le joueur a été supprimé avec succès.";
+        // Redirection immédiate pour rafraîchir la page après suppression
+        header("Location: ListeJoueur.php");
+        exit;
     } else {
-        $message = "Erreur lors de la suppression du joueur.";
+        $message = "Impossible de supprimer ce joueur, il a déjà participé à un match.";
+        // Redirection après 3 secondes si le Joueur n'a pas été supprimé
+        echo "<script>
+                setTimeout(function(){
+                    window.location.href = 'ListeJoueur.php';
+                }, 3000); // Redirection après 3 secondes
+              </script>";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -50,6 +59,10 @@ if (isset($_GET['supprimer'])) {
     <div>
         <a href="CreationJoueur.php" class="btn btn-primary">Ajouter un joueur</a>
     </div>
+    <!-- Affichage du message -->
+    <?php if (isset($message)): ?>
+        <p><?= htmlspecialchars($message) ?></p>
+    <?php endif; ?>
 
     <?php if (empty($joueurs)): ?>
         <p>Aucun joueur trouvé dans la base de données.</p>
@@ -64,7 +77,6 @@ if (isset($_GET['supprimer'])) {
                     <th>Taille (cm)</th>
                     <th>Poids (kg)</th>
                     <th>Statut</th>
-                    <th>Évaluation</th>
                 </tr>
             </thead>
             <tbody>
@@ -77,7 +89,6 @@ if (isset($_GET['supprimer'])) {
                         <td><?= htmlspecialchars($joueur['taille']) ?></td>
                         <td><?= htmlspecialchars($joueur['poids']) ?></td>
                         <td><?= htmlspecialchars($joueur['statut']) ?></td>
-                        <td><?= htmlspecialchars($joueur['evaluation'] ?: 'Non noté') ?></td>
                         <td>
                         <!-- Lien pour modifier et supprimer le joueur -->
                         <a href="ModifierJoueur.php?id=<?= urlencode($joueur['id']) ?>">Modifier</a>

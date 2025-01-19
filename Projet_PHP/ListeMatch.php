@@ -24,9 +24,17 @@ $matchs = getAllMatchs();
 if (isset($_GET['supprimer'])) {
     $id = (int) $_GET['supprimer'];
     if (supprimerMatch($id)) {
-        $message = "Le match a été supprimé avec succès.";
+        // Redirection immédiate pour rafraîchir la page après suppression
+        header("Location: ListeMatch.php");
+        exit;
     } else {
-        $message = "Erreur lors de la suppression du match.";
+        $message = "Erreur : Vous ne pouvez pas supprimer un match qui a déjà eu lieu.";
+        // Redirection après 3 secondes si le match ne peut pas être supprimé
+        echo "<script>
+                setTimeout(function(){
+                    window.location.href = 'ListeMatch.php';
+                }, 3000); // Redirection après 3 secondes
+              </script>";
     }
 }
 
@@ -47,6 +55,10 @@ if (isset($_GET['supprimer'])) {
     <div>
         <a href="CreationMatch.php" class="btn btn-primary">Ajouter un match</a>
     </div>
+
+    <?php if (isset($message)): ?>
+        <p><?= htmlspecialchars($message) ?></p>
+    <?php endif; ?>
 
     <?php if (empty($matchs)): ?>
         <p>Aucun match trouvé.</p>

@@ -66,7 +66,7 @@ function getAllPlayers($pdo) {
  */
 function getTousLesJoueurs(): array {
     $pdo = getDbConnection();
-    $stmt = $pdo->query("SELECT id, nom, prenom, numero_licence, date_naissance, taille, poids, statut, evaluation FROM joueurs");
+    $stmt = $pdo->query("SELECT id, nom, prenom, numero_licence, date_naissance, taille, poids, statut FROM joueurs");
     return $stmt->fetchAll();
 }
 
@@ -77,13 +77,13 @@ function getJoueurParId($id) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function modifierJoueur($id, $nom, $prenom, $numero_licence, $date_naissance, $taille, $poids, $statut, $commentaires, $evaluation) {
+function modifierJoueur($id, $nom, $prenom, $numero_licence, $date_naissance, $taille, $poids, $statut, $commentaires) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("
         UPDATE joueurs 
         SET nom = :nom, prenom = :prenom, numero_licence = :numero_licence, 
             date_naissance = :date_naissance, taille = :taille, poids = :poids, 
-            statut = :statut, commentaires = :commentaires, evaluation = :evaluation
+            statut = :statut, commentaires = :commentaires
         WHERE id = :id
     ");
     return $stmt->execute([
@@ -95,19 +95,31 @@ function modifierJoueur($id, $nom, $prenom, $numero_licence, $date_naissance, $t
         'taille' => $taille,
         'poids' => $poids,
         'statut' => $statut,
-        'commentaires' => $commentaires,
-        'evaluation' => $evaluation,
+        'commentaires' => $commentaires
     ]);
 }
 
 /**
- * Supprime un joueur de la base de données.
+ * Supprime un joueur de la base de données, uniquement s'il n'a pas participé à un match.
  * 
  * @param int $id
  * @return bool
  */
 function supprimerJoueur($id): bool {
+    // Connexion à la base de données
     $pdo = getDbConnection();
+
+    // Vérifier si le joueur a déjà participé à un match
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM feuillematch WHERE joueur_id = :id");
+    $stmt->execute(['id' => $id]);
+    $participation = $stmt->fetchColumn();
+
+    // Si le joueur a participé à un match, on refuse la suppression
+    if ($participation > 0) {
+        return false; // Le joueur a déjà joué, on ne peut pas le supprimer
+    }
+
+    // Sinon, on procède à la suppression
     $stmt = $pdo->prepare("DELETE FROM joueurs WHERE id = :id");
     return $stmt->execute(['id' => $id]);
 }
@@ -162,16 +174,33 @@ function getAllMatchs() {
  */
 function supprimerMatch($id): bool {
     $pdo = getDbConnection();
-    
-    // Supprimer d'abord les joueurs associés au match
-    $stmt = $pdo->prepare("DELETE FROM feuillematch WHERE match_id = :id");
+
+    // Récupérer la date et l'heure du match
+    $stmt = $pdo->prepare("SELECT date_match, heure_match FROM matchs WHERE id = :id");
     $stmt->execute(['id' => $id]);
+    $match = $stmt->fetch();
 
-    // Supprimer ensuite le match
-    $stmt = $pdo->prepare("DELETE FROM matchs WHERE id = :id");
-    return $stmt->execute(['id' => $id]);
+    if ($match) {
+        // Fusionner la date et l'heure pour créer un objet DateTime
+        $date_heure_match = new DateTime($match['date_match'] . ' ' . $match['heure_match']);
+        $now = new DateTime();
+
+        // Vérifier si le match a déjà eu lieu
+        if ($date_heure_match < $now) {
+            return false; // Le match a déjà eu lieu, ne pas supprimer
+        }
+
+        // Supprimer d'abord les joueurs associés au match
+        $stmt = $pdo->prepare("DELETE FROM feuillematch WHERE match_id = :id");
+        $stmt->execute(['id' => $id]);
+
+        // Supprimer ensuite le match
+        $stmt = $pdo->prepare("DELETE FROM matchs WHERE id = :id");
+        return $stmt->execute(['id' => $id]);
+    }
+
+    return false; // Si le match n'existe pas, retourner false
 }
-
 
 function getMatchParId($id) {
     $pdo = getDbConnection();

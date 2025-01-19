@@ -7,6 +7,14 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Déconnexion
+if (isset($_GET['deconnexion'])) {
+    session_start();
+    session_destroy();
+    header("Location: Connexion.php");
+    exit;
+}
+
 require_once __DIR__ . '/librairie/BD.php'; // Inclure le fichier BD.php
 require_once __DIR__ . '/CSS/header.php'; // Inclure le header
 
