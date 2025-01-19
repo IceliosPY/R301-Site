@@ -60,6 +60,11 @@ if (isset($_GET['supprimer'])) {
     <div class="container">
         <h1>Liste des joueurs</h1>
 
+        <!-- Bouton pour ajouter un joueur -->
+        <div class="action-buttons">
+            <a href="CreationJoueur.php" class="btn btn-primary">Ajouter un joueur</a>
+        </div>
+
         <!-- Affichage du message -->
         <?php if (isset($message)): ?>
             <p class="error-message"><?= htmlspecialchars($message) ?></p>
