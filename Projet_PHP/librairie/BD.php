@@ -233,43 +233,45 @@ function supprimerJoueurDeFeuilleMatch($match_id, $joueur_id) {
     $stmt->execute(['match_id' => $match_id, 'joueur_id' => $joueur_id]);
 }
 
+function supprimerTousJoueursDeFeuilleMatch($match_id) {
+    $pdo = getDbConnection();
+    $stmt = $pdo->prepare("DELETE FROM feuillematch WHERE match_id = :match_id");
+    $stmt->execute(['match_id' => $match_id]);
+}
+
 // Fonction pour récupérer les statistiques des matchs et des joueurs
 function getStatistiques() {
     $pdo = getDbConnection();
-    
-    // Statistiques générales sur les matchs, exclure les matchs sans résultat
-    $query = "SELECT 
-                COUNT(*) AS total_matchs,
-                SUM(CASE WHEN resultat_equipe > resultat_adverse THEN 1 ELSE 0 END) AS matchs_gagnés,
-                SUM(CASE WHEN resultat_equipe < resultat_adverse THEN 1 ELSE 0 END) AS matchs_perdus,
-                SUM(CASE WHEN resultat_equipe = resultat_adverse THEN 1 ELSE 0 END) AS matchs_nuls
-              FROM matchs
-              WHERE resultat_equipe IS NOT NULL AND resultat_adverse IS NOT NULL";  // Exclure les matchs sans résultat
-    $stmt = $pdo->query($query);
-    $matchs = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Récupérer les statistiques des joueurs, exclure les matchs sans résultat
+    // Statistiques générales sur les matchs
+    $queryMatchs = "SELECT 
+                        COUNT(*) AS total_matchs,
+                        SUM(CASE WHEN resultat_equipe > resultat_adverse THEN 1 ELSE 0 END) AS matchs_gagnés,
+                        SUM(CASE WHEN resultat_equipe < resultat_adverse THEN 1 ELSE 0 END) AS matchs_perdus,
+                        SUM(CASE WHEN resultat_equipe = resultat_adverse THEN 1 ELSE 0 END) AS matchs_nuls
+                    FROM matchs
+                    WHERE resultat_equipe IS NOT NULL AND resultat_adverse IS NOT NULL";  // Exclure les matchs sans résultat
+    $stmtMatchs = $pdo->query($queryMatchs);
+    $matchs = $stmtMatchs->fetch(PDO::FETCH_ASSOC);
+
+    // Statistiques des joueurs
     $queryJoueurs = "SELECT 
                         j.id,
                         j.nom,
                         j.prenom,
                         j.statut,
-                        COUNT(CASE WHEN f.statut = 'titulaire' THEN 1 END) AS titulaire_count,
-                        COUNT(CASE WHEN f.statut = 'remplacant' THEN 1 END) AS remplaçant_count,
+                        fm.poste_prefere,
+                        COUNT(CASE WHEN fm.statut = 'titulaire' THEN 1 END) AS titulaire_count,
+                        COUNT(CASE WHEN fm.statut = 'remplaçant' THEN 1 END) AS remplaçant_count,
                         AVG(j.evaluation) AS moyenne_evaluation,
-                        SUM(CASE WHEN m.resultat_equipe > m.resultat_adverse THEN 1 ELSE 0 END) / COUNT(*) * 100 AS pourcentage_victoires,
-                        -- Calcul du poste préféré basé sur les occurrences des différents postes
-                        (SELECT f.poste_prefere
-                         FROM feuillematch f
-                         WHERE f.joueur_id = j.id
-                         GROUP BY f.poste_prefere
-                         ORDER BY COUNT(f.poste_prefere) DESC
-                         LIMIT 1) AS poste_prefere
-                     FROM joueurs j
-                     LEFT JOIN feuillematch f ON j.id = f.joueur_id
-                     LEFT JOIN matchs m ON f.match_id = m.id
-                     WHERE m.resultat_equipe IS NOT NULL AND m.resultat_adverse IS NOT NULL  -- Exclure les matchs sans résultat
-                     GROUP BY j.id";
+                        SUM(CASE WHEN m.resultat_equipe > m.resultat_adverse THEN 1 ELSE 0 END) / COUNT(*) * 100 AS pourcentage_victoires
+                    FROM joueurs j
+                    LEFT JOIN feuillematch fm ON j.id = fm.joueur_id
+                    LEFT JOIN matchs m ON fm.match_id = m.id
+                    WHERE fm.joueur_id IS NOT NULL  -- Exclure les joueurs supprimés de feuillematch
+                    AND m.resultat_equipe IS NOT NULL AND m.resultat_adverse IS NOT NULL  -- Exclure les matchs sans résultat
+                    GROUP BY j.id
+                    HAVING COUNT(fm.match_id) > 0";  // Exclure les joueurs sans matchs
     $stmtJoueurs = $pdo->query($queryJoueurs);
     $joueurs = $stmtJoueurs->fetchAll(PDO::FETCH_ASSOC);
 

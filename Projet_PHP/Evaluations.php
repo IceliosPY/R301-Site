@@ -33,18 +33,6 @@ if (!$match) {
     die("Match non trouvé.");
 }
 
-// Créer un objet DateTime pour la date/heure du match
-$date_match = new DateTime($match['date_match'] . ' ' . $match['heure_match']);
-$current_time = new DateTime(); // Heure actuelle
-
-// Vérifier si la date du match est passée
-$is_match_past = $date_match < $current_time;
-
-if ($is_match_past) {
-    // Empêcher les modifications si le match est passé
-    $message = "Ce match est déjà passé. Vous ne pouvez plus modifier la feuille de match.";
-}
-
 // Initialiser ou récupérer les joueurs stockés en session
 if (!isset($_SESSION['feuille_match'][$match_id])) {
     $_SESSION['feuille_match'][$match_id] = [

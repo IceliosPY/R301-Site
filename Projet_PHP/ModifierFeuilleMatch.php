@@ -105,13 +105,8 @@ if ($_POST['action'] === 'ajouter') {
         if ($total_joueurs !== 8) {
             $message = "Vous devez sélectionner exactement 5 titulaires et 3 remplaçants (8 joueurs au total).";
         } else {
-            // Supprimer les joueurs qui ne sont plus dans la feuille de match
-            foreach ($_SESSION['feuille_match'][$match_id]['titulaire'] as $joueur_id => $poste_prefere) {
-                supprimerJoueurDeFeuilleMatch($match_id, $joueur_id);  // Supprimer les anciens titulaires
-            }
-            foreach ($_SESSION['feuille_match'][$match_id]['remplacant'] as $joueur_id => $poste_prefere) {
-                supprimerJoueurDeFeuilleMatch($match_id, $joueur_id);  // Supprimer les anciens remplaçants
-            }
+            // Supprimer tous les joueurs du match (titulaire et remplaçant)
+            supprimerTousJoueursDeFeuilleMatch($match_id);  // Supprimer tous les joueurs liés au match
     
             // Ajouter les nouveaux joueurs à la base de données
             foreach ($_SESSION['feuille_match'][$match_id]['titulaire'] as $joueur_id => $poste_prefere) {

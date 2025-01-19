@@ -8,6 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 require_once __DIR__ . '/librairie/BD.php'; // Inclure le fichier BD.php
+require_once __DIR__ . '/CSS/header.php'; // Inclure le header
 
 // Récupérer les statistiques
 $statistiques = getStatistiques();
