@@ -7,8 +7,7 @@ CREATE TABLE joueurs (
     taille FLOAT NOT NULL,
     poids FLOAT NOT NULL,
     statut ENUM('Actif', 'Blessé', 'Suspendu', 'Absent') NOT NULL
-    commentaires VARCHAR(255),
-    evaluation TINYINT(1) DEFAULT 0 CHECK (evaluation BETWEEN 1 AND 5)
+    commentaires VARCHAR(255) DEFAULT NULL
 );
 
 CREATE TABLE utilisateurs (
@@ -25,7 +24,8 @@ CREATE TABLE matchs (
     heure_match TIME NOT NULL,
     equipe_adverse VARCHAR(255) NOT NULL,
     lieu ENUM('Domicile', 'Extérieur') NOT NULL,
-    resultat VARCHAR(255)
+    resultat_equipe INT(11) DEFAULT NULL,
+    resultat_adverse INT(11) DEFAULT NULL
 );
 
 CREATE OR REPLACE TABLE feuillematch (
@@ -33,6 +33,21 @@ CREATE OR REPLACE TABLE feuillematch (
     match_id INT,
     joueur_id INT,
     statut ENUM('titulaire', 'remplacant') NOT NULL,
+    poste_prefere ENUM('Top Lane', 'Mid Lane', 'Bot Lane ADC', 'Bot Lane Support', 'Jungler') NOT NULL,
+    evaluation INT(11) DEFAULT 5,
+    CHECK (evaluation BETWEEN 1 AND 5 OR evaluation IS NULL),
+    FOREIGN KEY (match_id) REFERENCES matchs(id),
+    FOREIGN KEY (joueur_id) REFERENCES joueurs(id)
+);
+
+CREATE OR REPLACE TABLE feuillematch (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    match_id INT,
+    joueur_id INT,
+    statut ENUM('titulaire', 'remplacant') NOT NULL,
+    poste_prefere ENUM('Top Lane', 'Mid Lane', 'Bot Lane ADC', 'Bot Lane Support', 'Jungler') NOT NULL,
+    evaluation INT(11) DEFAULT 5,
+    CHECK (evaluation BETWEEN 1 AND 5 OR evaluation IS NULL),
     FOREIGN KEY (match_id) REFERENCES matchs(id),
     FOREIGN KEY (joueur_id) REFERENCES joueurs(id)
 );
