@@ -14,26 +14,23 @@ $message = '';
 
 // Traitement du formulaire d'ajout d'un match
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $date_match = $_POST['date_match']; // format 'YYYY-MM-DD'
-    $heure_match = $_POST['heure_match']; // format 'HH:MM'
+    $date_match = $_POST['date_match'];
+    $heure_match = $_POST['heure_match'];
     $equipe_adverse = $_POST['equipe_adverse'];
     $lieu = $_POST['lieu'];
-    $resultat = $_POST['resultat'];
+    $resultat_equipe = $_POST['resultat_equipe'];  // Nouveau champ
+    $resultat_adverse = $_POST['resultat_adverse'];  // Nouveau champ
 
     // Combiner date et heure pour la comparaison
     $datetime_saisie = new DateTime($date_match . ' ' . $heure_match);
     $datetime_actuelle = new DateTime(); // Date et heure actuelles
 
-    // Vérifier si la date et l'heure sont dans le futur ou égales à l'heure actuelle
     if ($datetime_saisie < $datetime_actuelle) {
         $message = "La date et l'heure du match doivent être au moins égales à la date et l'heure actuelles.";
     } else {
-        // Si la date et l'heure sont valides, on enregistre le match et on récupère son ID
-        $match_id = ajouterMatch($date_match, $heure_match, $equipe_adverse, $lieu, $resultat);
+        $match_id = ajouterMatch($date_match, $heure_match, $equipe_adverse, $lieu, $resultat_equipe, $resultat_adverse);
 
-        // Vérifier si l'insertion a réussi
         if ($match_id) {
-            // Rediriger vers la page de liste des matchs
             header("Location: ListeMatch.php?match_id=" . $match_id);
             exit();
         } else {
@@ -60,25 +57,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form method="POST" action="CreationMatch.php">
-        <label for="date_match">Date du match :</label>
-        <input type="date" id="date_match" name="date_match" required><br>
+    <label for="date_match">Date du match :</label>
+    <input type="date" id="date_match" name="date_match" required><br>
 
-        <label for="heure_match">Heure du match :</label>
-        <input type="time" id="heure_match" name="heure_match" required><br>
+    <label for="heure_match">Heure du match :</label>
+    <input type="time" id="heure_match" name="heure_match" required><br>
 
-        <label for="equipe_adverse">Nom de l'équipe adverse :</label>
-        <input type="text" id="equipe_adverse" name="equipe_adverse" required><br>
+    <label for="equipe_adverse">Nom de l'équipe adverse :</label>
+    <input type="text" id="equipe_adverse" name="equipe_adverse" required><br>
 
-        <label for="lieu">Lieu de rencontre :</label>
-        <select id="lieu" name="lieu" required>
-            <option value="Domicile">Domicile</option>
-            <option value="Extérieur">Extérieur</option>
-        </select><br>
+    <label for="lieu">Lieu de rencontre :</label>
+    <select id="lieu" name="lieu" required>
+        <option value="Domicile">Domicile</option>
+        <option value="Extérieur">Extérieur</option>
+    </select><br>
 
-        <label for="resultat">Résultat :</label>
-        <input type="text" id="resultat" name="resultat"><br>
+    <label for="resultat_equipe">Résultat (équipe) :</label>
+    <input type="text" id="resultat_equipe" name="resultat_equipe"><br>
 
-        <button type="submit">Créer le match</button>
-    </form>
+    <label for="resultat_adverse">Résultat (adverse) :</label>
+    <input type="text" id="resultat_adverse" name="resultat_adverse"><br>
+
+    <button type="submit">Créer le match</button>
+</form>
+
 </body>
 </html>

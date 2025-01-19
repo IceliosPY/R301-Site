@@ -24,9 +24,9 @@ $matchs = getAllMatchs();
 if (isset($_GET['supprimer'])) {
     $id = (int) $_GET['supprimer'];
     if (supprimerMatch($id)) {
-        $message = "Le joueur a été supprimé avec succès.";
+        $message = "Le match a été supprimé avec succès.";
     } else {
-        $message = "Erreur lors de la suppression du joueur.";
+        $message = "Erreur lors de la suppression du match.";
     }
 }
 
@@ -57,7 +57,8 @@ if (isset($_GET['supprimer'])) {
                     <th>Date et Heure</th>
                     <th>Équipe adverse</th>
                     <th>Lieu</th>
-                    <th>Résultat</th>
+                    <th>Résultat (Équipe)</th>
+                    <th>Résultat (Adverse)</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -73,7 +74,8 @@ if (isset($_GET['supprimer'])) {
                         <td><?= htmlspecialchars($date_heure_formatee) ?></td>
                         <td><?= htmlspecialchars($match['equipe_adverse']) ?></td>
                         <td><?= htmlspecialchars($match['lieu']) ?></td>
-                        <td><?= htmlspecialchars($match['resultat']) ?></td>
+                        <td><?= htmlspecialchars($match['resultat_equipe']) ?></td>
+                        <td><?= htmlspecialchars($match['resultat_adverse']) ?></td>
                         <td>
                             <a href="ModifierMatch.php?id=<?= urlencode($match['id']) ?>">Modifier</a>
                             <a href="ModifierFeuilleMatch.php?match_id=<?= urlencode($match['id']) ?>">Voir/Modifier la sélection</a>

@@ -32,25 +32,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $heure_match = $_POST['heure_match'];
     $equipe_adverse = $_POST['equipe_adverse'];
     $lieu = $_POST['lieu'];
-    $resultat = $_POST['resultat'];
 
-    // Combiner date et heure pour la comparaison
+    // Vérifiez si les champs sont vides
+    $resultat_equipe = ($_POST['resultat_equipe'] !== '') ? (int)$_POST['resultat_equipe'] : null;
+    $resultat_adverse = ($_POST['resultat_adverse'] !== '') ? (int)$_POST['resultat_adverse'] : null;
+
+    // Validation de la date et de l'heure
     $datetime_saisie = new DateTime($date_match . ' ' . $heure_match);
-    $datetime_actuelle = new DateTime(); // Date et heure actuelles
+    $datetime_actuelle = new DateTime();
 
-    // Vérifier si la date et l'heure sont dans le futur ou égales à l'heure actuelle
     if ($datetime_saisie < $datetime_actuelle) {
         $message = "La date et l'heure du match doivent être au moins égales à la date et l'heure actuelles.";
     } else {
-        // Si la date et l'heure sont valides, on peut insérer dans la base de données
-        if (modifierMatch($date_match, $heure_match, $equipe_adverse, $lieu, $resultat)) {
-            header("Location: ListeMatch.php"); // Redirection vers la liste des matchs
+        if (modifierMatch($id, $date_match, $heure_match, $equipe_adverse, $lieu, $resultat_equipe, $resultat_adverse)) {
+            header("Location: ListeMatch.php");
             exit();
         } else {
-            $message = "Erreur lors de la création du match.";
+            $message = "Erreur lors de la modification du match.";
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -84,8 +86,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="lieu">Lieu :</label>
             <input type="text" id="lieu" name="lieu" value="<?= htmlspecialchars($match['lieu']) ?>" required><br>
 
-            <label for="resultat">Résultat :</label>
-            <input type="text" id="resultat" name="resultat" value="<?= htmlspecialchars($match['resultat']) ?>" required><br>
+            <label for="resultat_equipe">Résultat de l'équipe :</label>
+            <input type="number" id="resultat_equipe" name="resultat_equipe" value="<?= htmlspecialchars($match['resultat_equipe']) ?>"><br>
+
+            <label for="resultat_adverse">Résultat de l'adversaire :</label>
+            <input type="number" id="resultat_adverse" name="resultat_adverse" value="<?= htmlspecialchars($match['resultat_adverse']) ?>"><br>
 
             <button type="submit">Enregistrer</button>
         </form>

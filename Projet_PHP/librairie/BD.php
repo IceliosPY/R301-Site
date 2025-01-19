@@ -119,21 +119,23 @@ function supprimerJoueur($id): bool {
  * @param string $heure_match
  * @param string $equipe_adverse
  * @param string $lieu
- * @param string|null $resultat
+ * @param string|null $resultat_equipe
+ * @param string|null $resultat_adverse
  * @return bool
  */
-function ajouterMatch(string $date_match, string $heure_match, string $equipe_adverse, string $lieu, string $resultat = null) {
+function ajouterMatch(string $date_match, string $heure_match, string $equipe_adverse, string $lieu, string $resultat_equipe = null, string $resultat_adverse = null) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("
-        INSERT INTO matchs (date_match, heure_match, equipe_adverse, lieu, resultat)
-        VALUES (:date_match, :heure_match, :equipe_adverse, :lieu, :resultat)
+        INSERT INTO matchs (date_match, heure_match, equipe_adverse, lieu, resultat_equipe, resultat_adverse)
+        VALUES (:date_match, :heure_match, :equipe_adverse, :lieu, :resultat_equipe, :resultat_adverse)
     ");
     $stmt->execute([
         ':date_match' => $date_match,
         ':heure_match' => $heure_match,
         ':equipe_adverse' => $equipe_adverse,
         ':lieu' => $lieu,
-        ':resultat' => $resultat
+        ':resultat_equipe' => $resultat_equipe,
+        ':resultat_adverse' => $resultat_adverse
     ]);
     
     // Récupérer l'ID du match ajouté
@@ -148,7 +150,7 @@ function ajouterMatch(string $date_match, string $heure_match, string $equipe_ad
  */
 function getAllMatchs() {
     $pdo = getDbConnection(); // Appel à la fonction de connexion
-    $stmt = $pdo->query("SELECT id, date_match, heure_match, equipe_adverse, lieu, resultat FROM matchs ORDER BY date_match DESC, heure_match DESC");
+    $stmt = $pdo->query("SELECT id, date_match, heure_match, equipe_adverse, lieu, resultat_equipe, resultat_adverse FROM matchs ORDER BY date_match DESC, heure_match DESC");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -178,7 +180,7 @@ function getMatchParId($id) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function modifierMatch($id, $date_match, $heure_match, $equipe_adverse, $lieu, $resultat) {
+function modifierMatch($id, $date_match, $heure_match, $equipe_adverse, $lieu, $resultat_equipe, $resultat_adverse) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("
         UPDATE matchs
@@ -186,7 +188,8 @@ function modifierMatch($id, $date_match, $heure_match, $equipe_adverse, $lieu, $
             heure_match = :heure_match,
             equipe_adverse = :equipe_adverse,
             lieu = :lieu,
-            resultat = :resultat
+            resultat_equipe = :resultat_equipe,
+            resultat_adverse = :resultat_adverse
         WHERE id = :id
     ");
     return $stmt->execute([
@@ -194,34 +197,36 @@ function modifierMatch($id, $date_match, $heure_match, $equipe_adverse, $lieu, $
         'heure_match' => $heure_match,
         'equipe_adverse' => $equipe_adverse,
         'lieu' => $lieu,
-        'resultat' => $resultat,
+        'resultat_equipe' => $resultat_equipe !== null ? $resultat_equipe : null,
+        'resultat_adverse' => $resultat_adverse !== null ? $resultat_adverse : null,
         'id' => $id
     ]);
 }
 
 function getJoueursActifs() {
     $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT id, nom, prenom, taille, poids FROM joueurs WHERE statut = 'actif' ORDER BY nom, prenom");
+    $stmt = $pdo->prepare("SELECT id, nom, prenom, taille, poids, poste_prefere FROM joueurs WHERE statut = 'actif' ORDER BY nom, prenom");
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function ajouterJoueurFeuilleMatch($match_id, $joueur_id, $statut) {
+function ajouterJoueurFeuilleMatch($match_id, $joueur_id, $statut, $poste_prefere) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("
-        INSERT INTO feuillematch (match_id, joueur_id, statut)
-        VALUES (:match_id, :joueur_id, :statut)
+        INSERT INTO feuillematch (match_id, joueur_id, statut, poste_prefere)
+        VALUES (:match_id, :joueur_id, :statut, :poste_prefere)
     ");
     $stmt->execute([
         ':match_id' => $match_id,
         ':joueur_id' => $joueur_id,
-        ':statut' => $statut
+        ':statut' => $statut,
+        ':poste_prefere' => $poste_prefere
     ]);
 }
 
 function getJoueursDeFeuilleMatchComplet($match_id) {
     $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT joueur_id, statut FROM feuillematch WHERE match_id = :match_id");
+    $stmt = $pdo->prepare("SELECT joueur_id, statut, poste_prefere FROM feuillematch WHERE match_id = :match_id");
     $stmt->execute(['match_id' => $match_id]);
     return $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 }
@@ -236,17 +241,18 @@ function supprimerJoueurDeFeuilleMatch($match_id, $joueur_id) {
 function getStatistiques() {
     $pdo = getDbConnection();
     
-    // Statistiques générales sur les matchs
+    // Statistiques générales sur les matchs, exclure les matchs sans résultat
     $query = "SELECT 
                 COUNT(*) AS total_matchs,
-                SUM(CASE WHEN resultat = 'gagné' THEN 1 ELSE 0 END) AS matchs_gagnés,
-                SUM(CASE WHEN resultat = 'perdu' THEN 1 ELSE 0 END) AS matchs_perdus,
-                SUM(CASE WHEN resultat = 'nul' THEN 1 ELSE 0 END) AS matchs_nuls
-              FROM matchs";
+                SUM(CASE WHEN resultat_equipe > resultat_adverse THEN 1 ELSE 0 END) AS matchs_gagnés,
+                SUM(CASE WHEN resultat_equipe < resultat_adverse THEN 1 ELSE 0 END) AS matchs_perdus,
+                SUM(CASE WHEN resultat_equipe = resultat_adverse THEN 1 ELSE 0 END) AS matchs_nuls
+              FROM matchs
+              WHERE resultat_equipe IS NOT NULL AND resultat_adverse IS NOT NULL";  // Exclure les matchs sans résultat
     $stmt = $pdo->query($query);
     $matchs = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Récupérer les statistiques des joueurs
+    // Récupérer les statistiques des joueurs, exclure les matchs sans résultat
     $queryJoueurs = "SELECT 
                         j.id,
                         j.nom,
@@ -255,7 +261,7 @@ function getStatistiques() {
                         COUNT(CASE WHEN f.statut = 'titulaire' THEN 1 END) AS titulaire_count,
                         COUNT(CASE WHEN f.statut = 'remplacant' THEN 1 END) AS remplaçant_count,
                         AVG(j.evaluation) AS moyenne_evaluation,
-                        SUM(CASE WHEN m.resultat = 'gagné' THEN 1 ELSE 0 END) / COUNT(*) * 100 AS pourcentage_victoires,
+                        SUM(CASE WHEN m.resultat_equipe > m.resultat_adverse THEN 1 ELSE 0 END) / COUNT(*) * 100 AS pourcentage_victoires,
                         -- Calcul du poste préféré basé sur les occurrences des différents postes
                         (SELECT f.poste_prefere
                          FROM feuillematch f
@@ -266,6 +272,7 @@ function getStatistiques() {
                      FROM joueurs j
                      LEFT JOIN feuillematch f ON j.id = f.joueur_id
                      LEFT JOIN matchs m ON f.match_id = m.id
+                     WHERE m.resultat_equipe IS NOT NULL AND m.resultat_adverse IS NOT NULL  -- Exclure les matchs sans résultat
                      GROUP BY j.id";
     $stmtJoueurs = $pdo->query($queryJoueurs);
     $joueurs = $stmtJoueurs->fetchAll(PDO::FETCH_ASSOC);
