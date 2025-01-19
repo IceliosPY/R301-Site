@@ -10,11 +10,12 @@ if (!isset($_SESSION['user_id'])) {
 require_once __DIR__ . '/librairie/BD.php'; // Inclure le fichier BD.php
 
 // Récupérer l'ID du match depuis l'URL
-if (!isset($_GET['match_id']) || empty($_GET['match_id'])) {
+if (!isset($_GET['id']) || empty($_GET['id'])) {
     die("ID du match non spécifié.");
 }
 
-$match_id = (int)$_GET['match_id'];
+$match_id = (int)$_GET['id'];
+
 $message = "";
 
 // Récupérer tous les matchs
