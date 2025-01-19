@@ -1,8 +1,13 @@
 <?php
 // Configuration pour la connexion à la base de données
-const DB_HOST = 'localhost';
-const DB_NAME = 'Gestion-Equipe';
-const DB_USER = 'root';
+// const DB_HOST = 'localhost';
+// const DB_NAME = 'Gestion-Equipe';
+// const DB_USER = 'root';
+// const DB_PASSWORD = '';
+
+const DB_HOST = 'mysql-arcthers.alwaysdata.net';
+const DB_NAME = 'arcthers_Gestion-Equipe';
+const DB_USER = 'arcthers_test';
 const DB_PASSWORD = '';
 
 /**
