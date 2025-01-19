@@ -1,4 +1,4 @@
-CREATE TABLE joueurs (
+CREATE OR REPLACE TABLE joueurs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
     prenom VARCHAR(100) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE utilisateurs (
 
 INSERT INTO utilisateurs (username, password) VALUES ('Joueur@gmail.com', 'Password');
 
-CREATE TABLE matchs (
+CREATE OR REPLACE TABLE matchs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     date_match DATE NOT NULL,
     heure_match TIME NOT NULL,
