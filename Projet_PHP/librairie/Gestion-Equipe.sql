@@ -6,7 +6,7 @@ CREATE OR REPLACE TABLE joueurs (
     date_naissance DATE NOT NULL,
     taille FLOAT NOT NULL,
     poids FLOAT NOT NULL,
-    statut ENUM('Actif', 'Blessé', 'Suspendu', 'Absent') NOT NULL
+    statut ENUM('Actif', 'Blessé', 'Suspendu', 'Absent') NOT NULL,
     commentaires VARCHAR(255) DEFAULT NULL
 );
 
