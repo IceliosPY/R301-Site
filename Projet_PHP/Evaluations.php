@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Évaluations - Feuille de Match</title>
-    <link rel="stylesheet" href="./css/Evaluations.css">
+    <link rel="stylesheet" href="./CSS/Evaluations.css">
 </head>
 <body>
     <!-- Bandeau de navigation -->

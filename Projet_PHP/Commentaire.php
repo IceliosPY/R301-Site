@@ -36,7 +36,7 @@ if (!$joueur) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Commentaires du joueur</title>
-    <link rel="stylesheet" href="./css/Commentaires.css"> <!-- Lien vers le CSS -->
+    <link rel="stylesheet" href="./CSS/Commentaires.css"> <!-- Lien vers le CSS -->
 </head>
 <body>
     <!-- Bandeau de navigation -->
