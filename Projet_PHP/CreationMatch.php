@@ -18,8 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $heure_match = $_POST['heure_match'];
     $equipe_adverse = $_POST['equipe_adverse'];
     $lieu = $_POST['lieu'];
-    $resultat_equipe = $_POST['resultat_equipe'];  // Nouveau champ
-    $resultat_adverse = $_POST['resultat_adverse'];  // Nouveau champ
+    $resultat_equipe = $_POST['resultat_equipe']; // Nouveau champ
+    $resultat_adverse = $_POST['resultat_adverse']; // Nouveau champ
 
     // Combiner date et heure pour la comparaison
     $datetime_saisie = new DateTime($date_match . ' ' . $heure_match);
@@ -47,39 +47,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créer un match</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="./css/CreationMatch.css"> <!-- Lien vers le CSS -->
 </head>
 <body>
-    <h1>Créer un match</h1>
+    <!-- Bandeau de navigation -->
+    <header class="header">
+        <nav class="navbar">
+            <a href="ListeJoueur.php" class="btn btn-primary">Liste des joueurs</a>
+            <a href="ListeMatch.php" class="btn btn-primary">Liste des matchs</a>
+            <a href="Statistiques.php" class="btn btn-primary">Statistiques</a>
+            <a href="?deconnexion=1" class="btn btn-secondary">Se déconnecter</a>
+        </nav>
+    </header>
 
-    <?php if (!empty($message)) : ?>
-        <p><?= htmlspecialchars($message) ?></p>
-    <?php endif; ?>
+    <!-- Conteneur principal -->
+    <div class="container">
+        <h1>Créer un match</h1>
 
-    <form method="POST" action="CreationMatch.php">
-    <label for="date_match">Date du match :</label>
-    <input type="date" id="date_match" name="date_match" required><br>
+        <!-- Affichage du message -->
+        <?php if (!empty($message)) : ?>
+            <p class="error-message"><?= htmlspecialchars($message) ?></p>
+        <?php endif; ?>
 
-    <label for="heure_match">Heure du match :</label>
-    <input type="time" id="heure_match" name="heure_match" required><br>
+        <!-- Formulaire de création -->
+        <form method="POST" action="CreationMatch.php" class="form-container">
+            <label for="date_match">Date du match :</label>
+            <input type="date" id="date_match" name="date_match" required>
 
-    <label for="equipe_adverse">Nom de l'équipe adverse :</label>
-    <input type="text" id="equipe_adverse" name="equipe_adverse" required><br>
+            <label for="heure_match">Heure du match :</label>
+            <input type="time" id="heure_match" name="heure_match" required>
 
-    <label for="lieu">Lieu de rencontre :</label>
-    <select id="lieu" name="lieu" required>
-        <option value="Domicile">Domicile</option>
-        <option value="Extérieur">Extérieur</option>
-    </select><br>
+            <label for="equipe_adverse">Nom de l'équipe adverse :</label>
+            <input type="text" id="equipe_adverse" name="equipe_adverse" required>
 
-    <label for="resultat_equipe">Résultat (équipe) :</label>
-    <input type="text" id="resultat_equipe" name="resultat_equipe"><br>
+            <label for="lieu">Lieu de rencontre :</label>
+            <select id="lieu" name="lieu" required>
+                <option value="Domicile">Domicile</option>
+                <option value="Extérieur">Extérieur</option>
+            </select>
 
-    <label for="resultat_adverse">Résultat (adverse) :</label>
-    <input type="text" id="resultat_adverse" name="resultat_adverse"><br>
+            <label for="resultat_equipe">Résultat (équipe) :</label>
+            <input type="text" id="resultat_equipe" name="resultat_equipe">
 
-    <button type="submit">Créer le match</button>
-</form>
+            <label for="resultat_adverse">Résultat (adverse) :</label>
+            <input type="text" id="resultat_adverse" name="resultat_adverse">
 
+            <button type="submit" class="btn btn-primary">Créer le match</button>
+        </form>
+    </div>
 </body>
 </html>

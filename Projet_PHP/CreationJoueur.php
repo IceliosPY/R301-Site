@@ -12,6 +12,7 @@ require_once __DIR__ . '/librairie/BD.php';
 
 $message = '';
 
+// Traitement du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nom = $_POST['nom'];
     $prenom = $_POST['prenom'];
@@ -25,15 +26,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = "Tous les champs sont obligatoires.";
     } else {
         if (ajouterJoueur($nom, $prenom, $numero_licence, $date_naissance, $taille, $poids, $statut)) {
-            $message = "Joueur ajouté avec succès.";
             // Redirection vers ListeJoueur.php après une création réussie
             header("Location: ListeJoueur.php");
-            exit(); // Assurez-vous d'arrêter l'exécution après la redirection
+            exit();
         } else {
             $message = "Erreur lors de l'ajout du joueur.";
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -42,43 +43,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créer un joueur</title>
-    <link rel="stylesheet" href="/CSS/styles.css">
+    <link rel="stylesheet" href="./CSS/CreationJoueur.css"> <!-- Lien vers le CSS -->
 </head>
 <body>
-    <h1>Créer un joueur</h1>
+    <!-- Bandeau de navigation -->
+    <header class="header">
+        <nav class="navbar">
+            <a href="ListeJoueur.php" class="btn btn-primary">Liste des joueurs</a>
+            <a href="ListeMatch.php" class="btn btn-primary">Liste des matchs</a>
+            <a href="Statistiques.php" class="btn btn-primary">Statistiques</a>
+            <a href="?deconnexion=1" class="btn btn-secondary">Se déconnecter</a>
+        </nav>
+    </header>
 
-    <?php if (!empty($message)) : ?>
-        <p><?= htmlspecialchars($message) ?></p>
-    <?php endif; ?>
+    <!-- Conteneur principal -->
+    <div class="container">
+        <h1>Créer un joueur</h1>
 
-    <form method="POST" action="CreationJoueur.php">
-        <label for="nom">Nom :</label>
-        <input type="text" id="nom" name="nom" required><br>
+        <!-- Affichage du message -->
+        <?php if (!empty($message)) : ?>
+            <p class="error-message"><?= htmlspecialchars($message) ?></p>
+        <?php endif; ?>
 
-        <label for="prenom">Prénom :</label>
-        <input type="text" id="prenom" name="prenom" required><br>
+        <!-- Formulaire -->
+        <form method="POST" action="CreationJoueur.php" class="form-container">
+            <label for="nom">Nom :</label>
+            <input type="text" id="nom" name="nom" required>
 
-        <label for="numero_licence">N° Licence :</label>
-        <input type="text" id="numero_licence" name="numero_licence" required><br>
+            <label for="prenom">Prénom :</label>
+            <input type="text" id="prenom" name="prenom" required>
 
-        <label for="date_naissance">Date de naissance :</label>
-        <input type="date" id="date_naissance" name="date_naissance" required><br>
+            <label for="numero_licence">N° Licence :</label>
+            <input type="text" id="numero_licence" name="numero_licence" required>
 
-        <label for="taille">Taille (en cm) :</label>
-        <input type="number" id="taille" name="taille" step="0.1" required><br>
+            <label for="date_naissance">Date de naissance :</label>
+            <input type="date" id="date_naissance" name="date_naissance" required>
 
-        <label for="poids">Poids (en kg) :</label>
-        <input type="number" id="poids" name="poids" step="0.1" required><br>
+            <label for="taille">Taille (en cm) :</label>
+            <input type="number" id="taille" name="taille" step="0.1" required>
 
-        <label for="statut">Statut :</label>
-        <select id="statut" name="statut" required>
-            <option value="Actif">Actif</option>
-            <option value="Blessé">Blessé</option>
-            <option value="Suspendu">Suspendu</option>
-            <option value="Absent">Absent</option>
-        </select><br>
+            <label for="poids">Poids (en kg) :</label>
+            <input type="number" id="poids" name="poids" step="0.1" required>
 
-        <button type="submit">Créer le joueur</button>
-    </form>
+            <label for="statut">Statut :</label>
+            <select id="statut" name="statut" required>
+                <option value="Actif">Actif</option>
+                <option value="Blessé">Blessé</option>
+                <option value="Suspendu">Suspendu</option>
+                <option value="Absent">Absent</option>
+            </select>
+
+            <button type="submit" class="btn btn-primary">Créer le joueur</button>
+        </form>
+    </div>
 </body>
 </html>

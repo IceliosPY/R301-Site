@@ -16,7 +16,6 @@ if (isset($_GET['deconnexion'])) {
 }
 
 require_once __DIR__ . '/librairie/BD.php'; // Inclure le fichier BD.php
-require_once __DIR__ . '/CSS/header.php'; // Inclure le header
 
 // Récupérer tous les matchs via la fonction getAllMatchs() de BD.php
 $matchs = getAllMatchs();
@@ -33,7 +32,7 @@ if (isset($_GET['supprimer'])) {
         echo "<script>
                 setTimeout(function(){
                     window.location.href = 'ListeMatch.php';
-                }, 3000); // Redirection après 3 secondes
+                }, 3000);
               </script>";
     }
 }
@@ -46,60 +45,74 @@ if (isset($_GET['supprimer'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liste des matchs</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="./css/ListeMatch.css"> <!-- Lien vers le CSS -->
 </head>
 <body>
-    <h1>Liste des matchs</h1>
+    <!-- Bandeau de navigation -->
+    <header class="header">
+        <nav class="navbar">
+            <a href="ListeJoueur.php" class="btn btn-primary">Liste des joueurs</a>
+            <a href="ListeMatch.php" class="btn btn-primary">Liste des matchs</a>
+            <a href="Statistiques.php" class="btn btn-primary">Statistiques</a>
+            <a href="?deconnexion=1" class="btn btn-secondary">Se déconnecter</a>
+        </nav>
+    </header>
 
-    <!-- Bouton pour ajouter un match -->
-    <div>
-        <a href="CreationMatch.php" class="btn btn-primary">Ajouter un match</a>
-    </div>
+    <!-- Conteneur principal -->
+    <div class="container">
+        <h1>Liste des matchs</h1>
 
-    <?php if (isset($message)): ?>
-        <p><?= htmlspecialchars($message) ?></p>
-    <?php endif; ?>
+        <!-- Bouton pour ajouter un match -->
+        <div class="action-buttons">
+            <a href="CreationMatch.php" class="btn btn-primary">Ajouter un match</a>
+        </div>
 
-    <?php if (empty($matchs)): ?>
-        <p>Aucun match trouvé.</p>
-    <?php else: ?>
-        <table>
-            <thead>
-                <tr>
-                    <th>Date et Heure</th>
-                    <th>Équipe adverse</th>
-                    <th>Lieu</th>
-                    <th>Résultat (Équipe)</th>
-                    <th>Résultat (Adverse)</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($matchs as $match): ?>
+        <!-- Affichage du message -->
+        <?php if (isset($message)): ?>
+            <p class="error-message"><?= htmlspecialchars($message) ?></p>
+        <?php endif; ?>
+
+        <!-- Table des matchs -->
+        <?php if (empty($matchs)): ?>
+            <p>Aucun match trouvé.</p>
+        <?php else: ?>
+            <table>
+                <thead>
                     <tr>
-                        <?php
-                        // Formater la date et l'heure séparées
-                        $date_match = new DateTime($match['date_match']); // Date
-                        $heure_match = new DateTime($match['heure_match']); // Heure
-                        $date_heure_formatee = $date_match->format('d/m/Y') . ' à ' . $heure_match->format('H:i'); // Format: 11/01/2025 à 14:30
-                        ?>
-                        <td><?= htmlspecialchars($date_heure_formatee) ?></td>
-                        <td><?= htmlspecialchars($match['equipe_adverse']) ?></td>
-                        <td><?= htmlspecialchars($match['lieu']) ?></td>
-                        <td><?= htmlspecialchars($match['resultat_equipe']) ?></td>
-                        <td><?= htmlspecialchars($match['resultat_adverse']) ?></td>
-                        <td>
-                            <a href="ModifierMatch.php?id=<?= urlencode($match['id']) ?>">Modifier</a>
-                            <a href="ModifierFeuilleMatch.php?match_id=<?= urlencode($match['id']) ?>">Voir/Modifier la sélection</a>
-                            <a href="?supprimer=<?= $match['id'] ?>" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce match ?')">Supprimer</a>
-                            <!-- Nouveau bouton pour rediriger vers Resultat.php -->
-                            <a href="Resultat.php?id=<?= urlencode($match['id']) ?>">Modifier le résultat</a>
-                            <a href="Evaluations.php?id=<?= urlencode($match['id']) ?>">Évaluer</a>
-                        </td>
+                        <th>Date et Heure</th>
+                        <th>Équipe adverse</th>
+                        <th>Lieu</th>
+                        <th>Résultat (Équipe)</th>
+                        <th>Résultat (Adverse)</th>
+                        <th>Actions</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
+                </thead>
+                <tbody>
+                    <?php foreach ($matchs as $match): ?>
+                        <tr>
+                            <?php
+                            // Formater la date et l'heure
+                            $date_match = new DateTime($match['date_match']);
+                            $heure_match = new DateTime($match['heure_match']);
+                            $date_heure_formatee = $date_match->format('d/m/Y') . ' à ' . $heure_match->format('H:i');
+                            ?>
+                            <td><?= htmlspecialchars($date_heure_formatee) ?></td>
+                            <td><?= htmlspecialchars($match['equipe_adverse']) ?></td>
+                            <td><?= htmlspecialchars($match['lieu']) ?></td>
+                            <td><?= htmlspecialchars($match['resultat_equipe']) ?></td>
+                            <td><?= htmlspecialchars($match['resultat_adverse']) ?></td>
+                            <td>
+                                <a href="ModifierMatch.php?id=<?= urlencode($match['id']) ?>">Modifier</a>
+                                <a href="ModifierFeuilleMatch.php?match_id=<?= urlencode($match['id']) ?>">Voir/Modifier la sélection</a>
+                                <a href="?supprimer=<?= $match['id'] ?>" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce match ?')">Supprimer</a>
+                                <a href="Resultat.php?id=<?= urlencode($match['id']) ?>">Modifier le résultat</a>
+                                <a href="Evaluations.php?id=<?= urlencode($match['id']) ?>">Évaluer</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    </div>
 </body>
 </html>
