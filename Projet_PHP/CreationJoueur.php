@@ -7,7 +7,12 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: Connexion.php"); // Redirige vers la page de connexion si non connecté
     exit;
 }
-
+// Déconnexion
+if (isset($_GET['deconnexion'])) {
+    session_destroy();
+    header("Location: Connexion.php");
+    exit;
+}
 require_once __DIR__ . '/librairie/BD.php';
 
 $message = '';
